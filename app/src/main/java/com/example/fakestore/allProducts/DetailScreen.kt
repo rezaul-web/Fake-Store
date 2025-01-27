@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,8 +38,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.rememberAsyncImagePainter
 import com.example.fakestore.R
+import com.example.fakestore.cart.CartViewModel
 import com.example.fakestore.home.HomeViewModel
 import com.example.fakestore.models.allproducts.ProductItem
 import kotlin.math.roundToInt
@@ -47,7 +50,8 @@ import kotlin.math.roundToInt
 fun DetailScreen(
     onAddToCart: (ProductItem) -> Unit,
     onBuyNow: (ProductItem) -> Unit,
-    sharedViewModel: HomeViewModel
+    sharedViewModel: HomeViewModel,
+    cartViewmodel: CartViewModel= hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val product by sharedViewModel.selectedProduct.collectAsState()
@@ -58,31 +62,6 @@ fun DetailScreen(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        // Search Bar
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            singleLine = true,
-            leadingIcon = {
-                IconButton(onClick = {}) {
-                    Icon(Icons.Default.Search, contentDescription = null)
-                }
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = Color.Gray.copy(alpha = 0.1f),
-                focusedContainerColor = Color.White
-            ),
-            label = { Text("Search any product..") },
-            trailingIcon = {
-                IconButton(onClick = {}) {
-                    Image(painterResource(R.drawable.mic), contentDescription = null)
-                }
-            },
-            shape = RoundedCornerShape(20.dp)
-        )
 
         // Product Details
         Spacer(modifier = Modifier.height(16.dp))
@@ -142,7 +121,13 @@ fun DetailScreen(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(
-                onClick = { product?.let { onAddToCart(it) } },
+                onClick = { product?.let { cartViewmodel.addToCart(
+                    productId = it.id.toString(),
+                    price = it.price,
+                    name = it.title,
+                    quantity = 1,
+                    imageUrl = it.image
+                ) } },
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp)
