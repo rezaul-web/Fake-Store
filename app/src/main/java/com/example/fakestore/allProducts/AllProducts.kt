@@ -46,18 +46,15 @@ fun AllProducts(viewModel: HomeViewModel = hiltViewModel(), navController: NavCo
     var searchQuery by remember { mutableStateOf(TextFieldValue()) }
     var selectedCategory by remember { mutableStateOf("All") }
 
-    // The network call should only be triggered once or on some manual refresh, not every time
-
-
     Column(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
             singleLine = true,
             leadingIcon = {
                 IconButton(onClick = {}) {

@@ -1,4 +1,4 @@
-package com.example.fakestore.allProducts.utils
+package com.example.fakestore.utils
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text

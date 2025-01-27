@@ -1,4 +1,4 @@
-package com.example.fakestore
+package com.example.fakestore.utils
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fakestore.R
 
 @Composable
 fun SocialButtons(

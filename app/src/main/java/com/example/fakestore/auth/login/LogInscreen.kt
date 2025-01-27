@@ -37,10 +37,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.fakestore.FakeStoreTextField
-import com.example.fakestore.LoginOption
+import com.example.fakestore.utils.FakeStoreTextField
+import com.example.fakestore.utils.LoginOption
 import com.example.fakestore.R
-import com.example.fakestore.SocialButtons
+import com.example.fakestore.utils.SocialButtons
 import com.example.fakestore.auth.AuthResult
 import com.example.fakestore.ui.theme.Orange
 

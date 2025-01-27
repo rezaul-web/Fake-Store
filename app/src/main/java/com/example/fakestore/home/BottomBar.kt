@@ -1,21 +1,14 @@
 package com.example.fakestore.home
 
-import android.media.Image
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.example.bottombar.AnimatedBottomBar
 import com.example.bottombar.components.BottomBarItem
 import com.example.bottombar.model.IndicatorStyle
@@ -29,8 +22,8 @@ fun BottomBar(icons: List<NavigationItem>,navController: NavController) {
     AnimatedBottomBar(
         selectedItem = selectedItem,
         itemSize = icons.take(3).size,
-        containerColor = Color.LightGray,
-        indicatorStyle = IndicatorStyle.LINE
+        containerColor =MaterialTheme.colorScheme.surface,
+        indicatorStyle = IndicatorStyle.NONE
     ) {
         icons.forEachIndexed { index, navigationItem ->
             BottomBarItem(
@@ -51,15 +44,13 @@ fun BottomBar(icons: List<NavigationItem>,navController: NavController) {
                 },
                 imageVector = navigationItem.icon,
                 label = navigationItem.title,
-                containerColor = Color.Transparent
+                containerColor = MaterialTheme.colorScheme.surface
 
             )
 
         }
 
     }
-
-
 }
 
 data class NavigationItem(val route: String, val icon: ImageVector, val title: String)

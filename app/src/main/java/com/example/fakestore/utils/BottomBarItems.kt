@@ -1,4 +1,4 @@
-package com.example.fakestore.allProducts.utils
+package com.example.fakestore.utils
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
