@@ -14,7 +14,7 @@ import com.example.bottombar.components.BottomBarItem
 import com.example.bottombar.model.IndicatorStyle
 
 @Composable
-fun BottomBar(icons: List<NavigationItem>,navController: NavController) {
+fun FakeStoreBottomBar(icons: List<NavigationItem>, navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 

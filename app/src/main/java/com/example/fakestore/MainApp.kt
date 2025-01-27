@@ -1,8 +1,16 @@
 package com.example.fakestore
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -11,7 +19,11 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,12 +35,12 @@ import com.example.fakestore.utils.BottomBarItems
 import com.example.fakestore.auth.AuthScreen
 import com.example.fakestore.auth.login.LogInScreen
 import com.example.fakestore.auth.signup.SignUpScreen
-import com.example.fakestore.home.BottomBar
+import com.example.fakestore.home.FakeStoreBottomBar
 import com.example.fakestore.home.HomeScreen
 import com.example.fakestore.home.HomeViewModel
 import com.example.fakestore.cart.CartScreen
-import com.example.fakestore.order.OrderScreen
-import com.example.fakestore.order.ProfileScreen
+import com.example.fakestore.ordersmanagement.OrderScreen
+import com.example.fakestore.profile.ProfileScreen
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,7 +62,7 @@ fun MainApp(
     Scaffold(
         bottomBar = {
             if (currentRoute !in bottomBarHiddenRoutes) {
-                BottomBar(
+                FakeStoreBottomBar(
                     icons = BottomBarItems.shoppingAppNavigationItems,
                     navController = navController
                 )
@@ -98,8 +110,22 @@ fun MainApp(
 @Composable
 fun FakeStoreTopAppBar(scrollBehavior: TopAppBarScrollBehavior) {
     TopAppBar(
-        title = { Text(text = "Fake Store") },
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.app_icon),
+                    contentDescription = "App Icon",
+                    modifier = Modifier.size(24.dp) // Adjust size as needed
+                )
+                Spacer(modifier = Modifier.width(8.dp)) // Add spacing between icon and text
+                Text(text = "Stylish ", color = Color(0xFF4392F9))
+            }
+        },
         scrollBehavior = scrollBehavior,
     )
-
 }
+

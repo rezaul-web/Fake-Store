@@ -1,5 +1,6 @@
 package com.example.fakestore.allProducts
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,10 +53,11 @@ fun DetailScreen(
     onAddToCart: (ProductItem) -> Unit,
     onBuyNow: (ProductItem) -> Unit,
     sharedViewModel: HomeViewModel,
-    cartViewmodel: CartViewModel= hiltViewModel()
+    cartViewmodel: CartViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val product by sharedViewModel.selectedProduct.collectAsState()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -86,7 +89,7 @@ fun DetailScreen(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "\u20B9${((product?.price ?: 1.9) *85).roundToInt()}",
+            text = "\u20B9${((product?.price ?: 1.9) * 85).roundToInt()}",
             fontSize = 19.sp,
             fontWeight = FontWeight.Medium,
             color = Color.Black,
@@ -121,13 +124,18 @@ fun DetailScreen(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(
-                onClick = { product?.let { cartViewmodel.addToCart(
-                    productId = it.id.toString(),
-                    price = it.price,
-                    name = it.title,
-                    quantity = 1,
-                    imageUrl = it.image
-                ) } },
+                onClick = {
+                    product?.let {
+                        cartViewmodel.addToCart(
+                            productId = it.id.toString(),
+                            price = it.price,
+                            name = it.title,
+                            quantity = 1,
+                            imageUrl = it.image
+                        )
+                    }
+                    Toast.makeText(context, "Item Added to the Card", Toast.LENGTH_SHORT).show()
+                },
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp)

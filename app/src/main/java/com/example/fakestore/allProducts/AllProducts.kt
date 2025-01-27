@@ -1,11 +1,14 @@
 package com.example.fakestore.allProducts
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -39,6 +42,7 @@ import com.example.fakestore.R
 import com.example.fakestore.home.HomeViewModel
 import com.example.fakestore.network.Resource
 
+//This is the main Screen of the app
 @Composable
 fun AllProducts(viewModel: HomeViewModel = hiltViewModel(), navController: NavController) {
     val allProducts by viewModel.allProducts.collectAsState()
@@ -54,7 +58,9 @@ fun AllProducts(viewModel: HomeViewModel = hiltViewModel(), navController: NavCo
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             singleLine = true,
             leadingIcon = {
                 IconButton(onClick = {}) {
@@ -73,6 +79,16 @@ fun AllProducts(viewModel: HomeViewModel = hiltViewModel(), navController: NavCo
             },
             shape = RoundedCornerShape(20.dp)
         )
+        Box(
+            modifier = Modifier
+                .height(189.dp)
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+        ) {
+            Image(painter = painterResource(R.drawable.offer), contentDescription = null,
+                modifier = Modifier.matchParentSize()
+                )
+        }
 
         when (val state = allProducts) {
             is Resource.Error -> {

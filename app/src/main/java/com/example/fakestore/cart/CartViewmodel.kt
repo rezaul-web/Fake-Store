@@ -66,7 +66,7 @@ class CartViewModel @Inject constructor(
     }
 
     // Function to get cart items with real-time updates
-    fun getCartItems() {
+    private fun getCartItems() {
         if (uuid == null) {
             Log.e("CartViewModel", "User is not authenticated")
             return

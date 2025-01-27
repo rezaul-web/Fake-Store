@@ -1,4 +1,4 @@
-package com.example.fakestore.order
+package com.example.fakestore.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
