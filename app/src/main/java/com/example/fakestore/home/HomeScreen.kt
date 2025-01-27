@@ -44,7 +44,7 @@ import coil3.compose.AsyncImage
 import com.example.fakestore.R
 
 @Composable
-fun HomeScreen( onProductClick: (Product) -> Unit) {
+fun HomeScreen( ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue()) }
     var selectedCategory by remember { mutableStateOf("All") }
 

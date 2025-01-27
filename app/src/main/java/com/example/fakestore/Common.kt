@@ -43,7 +43,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun SocialButtons(onClickGoogle :()->Unit,onClickFacebook: () -> Unit,color: Color=Color.White) {
+fun SocialButtons(
+    onClickGoogle: () -> Unit,
+    onClickFacebook: () -> Unit,
+    color: Color = Color.White
+) {
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -60,15 +64,21 @@ fun SocialButtons(onClickGoogle :()->Unit,onClickFacebook: () -> Unit,color: Col
         }
         Spacer(Modifier.height(10.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
-            SignInButton(name = R.string.Google, icon = R.drawable.ic_google,onClickGoogle)
+            SignInButton(name = R.string.Google, icon = R.drawable.ic_google, onClickGoogle)
             Spacer(Modifier.weight(1f))
-            SignInButton(name = R.string.facebook, icon = R.drawable.ic_facebook,onClickFacebook)
+            SignInButton(name = R.string.facebook, icon = R.drawable.ic_facebook, onClickFacebook)
         }
     }
 
 }
+
 @Composable
-fun SignInButton(@StringRes name: Int, @DrawableRes icon: Int, onClick:()->Unit,color: Color=Color.White) {
+fun SignInButton(
+    @StringRes name: Int,
+    @DrawableRes icon: Int,
+    onClick: () -> Unit,
+    color: Color = Color.White
+) {
     Box(
         modifier = Modifier
             .width(150.dp)
@@ -96,12 +106,13 @@ fun SignInButton(@StringRes name: Int, @DrawableRes icon: Int, onClick:()->Unit,
     }
 
 }
+
 @Composable
 fun LoginOption(
     onClick: () -> Unit,
     @StringRes name: Int, @StringRes text: Int,
-    colorText: Color=Color.White,
-    colorName:Color=Color.White
+    colorText: Color = Color.White,
+    colorName: Color = Color.White
 
 ) {
     Row(
@@ -124,7 +135,7 @@ fun LoginOption(
                 Text(
                     text = stringResource(name),
                     fontSize = 16.sp,
-                    color =colorName
+                    color = colorName
                 )
             }
             HorizontalDivider(Modifier.width(50.dp))
@@ -134,33 +145,34 @@ fun LoginOption(
 }
 
 @Composable
-fun FoodHubTextField(value: String,
-                     onValueChange: (String) -> Unit,
-                     modifier: Modifier = Modifier,
-                     enabled: Boolean = true,
-                     readOnly: Boolean = false,
-                     textStyle: TextStyle = LocalTextStyle.current,
-                     label: @Composable (() -> Unit)? = null,
-                     placeholder: @Composable (() -> Unit)? = null,
-                     leadingIcon: @Composable (() -> Unit)? = null,
-                     trailingIcon: @Composable (() -> Unit)? = null,
-                     prefix: @Composable (() -> Unit)? = null,
-                     suffix: @Composable (() -> Unit)? = null,
-                     supportingText: @Composable (() -> Unit)? = null,
-                     isError: Boolean = false,
-                     visualTransformation: VisualTransformation = VisualTransformation.None,
-                     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-                     keyboardActions: KeyboardActions = KeyboardActions.Default,
-                     singleLine: Boolean = false,
-                     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
-                     minLines: Int = 1,
-                     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-                     shape: Shape = RoundedCornerShape(10.dp),
-                     colors: TextFieldColors = OutlinedTextFieldDefaults.colors().copy(
-                         unfocusedContainerColor = Color.LightGray.copy(0.4f),
-                         focusedContainerColor = Color.White,
+fun FakeStoreTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
+    textStyle: TextStyle = LocalTextStyle.current,
+    label: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    prefix: @Composable (() -> Unit)? = null,
+    suffix: @Composable (() -> Unit)? = null,
+    supportingText: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    singleLine: Boolean = false,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    minLines: Int = 1,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    shape: Shape = RoundedCornerShape(10.dp),
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors().copy(
+        unfocusedContainerColor = Color.LightGray.copy(0.4f),
+        focusedContainerColor = Color.White,
 
-                     )
+        )
 
 ) {
     Column {

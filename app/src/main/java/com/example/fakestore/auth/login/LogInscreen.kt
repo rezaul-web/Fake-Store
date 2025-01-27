@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.fakestore.FoodHubTextField
+import com.example.fakestore.FakeStoreTextField
 import com.example.fakestore.LoginOption
 import com.example.fakestore.R
 import com.example.fakestore.SocialButtons
@@ -116,7 +116,7 @@ fun LogInScreen(
             Spacer(Modifier.size(16.dp))
 
             // Email Field
-            FoodHubTextField(
+            FakeStoreTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = email,
                 onValueChange = { email = it },
@@ -126,7 +126,7 @@ fun LogInScreen(
             Spacer(Modifier.size(16.dp))
 
             // Password Field
-            FoodHubTextField(
+            FakeStoreTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = password,
                 onValueChange = { password = it },

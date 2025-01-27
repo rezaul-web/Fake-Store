@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.fakestore.FoodHubTextField
+import com.example.fakestore.FakeStoreTextField
 import com.example.fakestore.LoginOption
 import com.example.fakestore.R
 import com.example.fakestore.SocialButtons
@@ -63,7 +63,12 @@ fun SignUpScreen(
             }
             is AuthResult.Success -> {
                 Toast.makeText(context, "Success", Toast.LENGTH_SHORT).show()
-                navController.navigate("all_products")
+                navController.navigate("all_products") {
+                    popUpTo(route = "sign_up"){
+                        saveState=true
+                    }
+                    launchSingleTop=true
+                }
             }
             else -> {}
         }
@@ -83,19 +88,19 @@ fun SignUpScreen(
         ) {
             Box(Modifier.weight(1f))
             Text(text = "Sign Up", fontSize = 45.sp)
-            FoodHubTextField(
+            FakeStoreTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = fullName,
                 onValueChange = { fullName = it },
                 label = { Text("Full Name") })
             Spacer(Modifier.size(16.dp))
-            FoodHubTextField(
+            FakeStoreTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") })
             Spacer(Modifier.size(16.dp))
-            FoodHubTextField(
+            FakeStoreTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = password,
                 onValueChange = { password = it },
