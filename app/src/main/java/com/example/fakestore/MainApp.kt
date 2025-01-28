@@ -119,8 +119,9 @@ fun MainApp(
 
 
             composable(
-                "updateAddress/{addressLine}/{city}/{state}/{postalCode}/{country}",
+                "updateAddress/{addressLine}/{city}/{state}/{postalCode}/{country}/{isDefault}",
                 arguments = listOf(
+                    navArgument("isDefault") { type = NavType.StringType },
                     navArgument("addressLine") { type = NavType.StringType },
                     navArgument("city") { type = NavType.StringType },
                     navArgument("state") { type = NavType.StringType },
@@ -128,12 +129,15 @@ fun MainApp(
                     navArgument("country") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
+
+                val isDefault = backStackEntry.arguments?.getString("isDefault") ?: ""
                 val addressLine = backStackEntry.arguments?.getString("addressLine") ?: ""
                 val city = backStackEntry.arguments?.getString("city") ?: ""
                 val state = backStackEntry.arguments?.getString("state") ?: ""
                 val postalCode = backStackEntry.arguments?.getString("postalCode") ?: ""
                 val country = backStackEntry.arguments?.getString("country") ?: ""
                 UpdateAddressScreen(
+                    isDefault = isDefault=="true",
                     navController = navController,
                     addressLine = addressLine,
                     city = city,

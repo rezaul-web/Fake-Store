@@ -11,13 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.fakestore.models.allproducts.UserAddress
 import com.example.fakestore.utils.FakeStoreAlertDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -75,6 +75,7 @@ fun ProfileScreen(
                     .await()
 
                 userAddress = addressSnapshot.documents.mapNotNull { document ->
+                    val isDefault=document.getString("isDefault")
                     val addressLine = document.getString("addressLine")
                     val city = document.getString("city")
                     val state = document.getString("state")
@@ -83,6 +84,7 @@ fun ProfileScreen(
 
                     if (addressLine != null && city != null && state != null && postalCode != null && country != null) {
                         mapOf(
+                            "isDefault" to isDefault!!,
                             "addressLine" to addressLine,
                             "city" to city,
                             "state" to state,
@@ -155,7 +157,21 @@ fun ProfileScreen(
                                 .fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("Address Line: ${address["addressLine"] ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
+                           Row(modifier = Modifier.fillMaxWidth(),
+                               horizontalArrangement = Arrangement.SpaceBetween
+                               ) {
+                                Text(
+                                    "Address Line: ${address["addressLine"] ?: "N/A"}",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                               // Fetch `isDefault` value safely
+                               val isDefault = address["isDefault"]
+
+                               // Display "Default" only if `isDefault` is true
+                               val text = if (isDefault=="true") "Default" else ""
+
+                               Text(text=text, color = Color.Red)
+                            }
                             Text("City: ${address["city"] ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
                             Text("State: ${address["state"] ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
                             Text("Postal Code: ${address["postalCode"] ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
@@ -169,7 +185,7 @@ fun ProfileScreen(
                                     onClick = {
                                         // Navigate to the update address screen or trigger update logic
                                         navController.navigate(
-                                            "updateAddress/${address["addressLine"]}/${address["city"]}/${address["state"]}/${address["postalCode"]}/${address["country"]}"
+                                            "updateAddress/${address["addressLine"]}/${address["city"]}/${address["state"]}/${address["postalCode"]}/${address["country"]}/${address["isDefault"]}"
                                         )
                                     },
                                     shape = RoundedCornerShape(12.dp)

@@ -1,4 +1,4 @@
-package com.example.fakestore.models.allproducts
+package com.example.fakestore.model
 
 data class ProductItem(
     val category: String,

@@ -1,6 +1,6 @@
 package com.example.fakestore.network
 
-import com.example.fakestore.models.allproducts.AllProducts
+import com.example.fakestore.model.AllProducts
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException

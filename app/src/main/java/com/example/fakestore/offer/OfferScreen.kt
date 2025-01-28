@@ -36,7 +36,7 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.fakestore.allProducts.StarRatingBar
 import com.example.fakestore.allProducts.AllProductsViewModel
-import com.example.fakestore.models.allproducts.ProductItem
+import com.example.fakestore.model.ProductItem
 import com.example.fakestore.network.Resource
 import kotlin.math.roundToInt
 

@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.rememberAsyncImagePainter
 import com.example.fakestore.cart.CartViewModel
-import com.example.fakestore.models.allproducts.ProductItem
+import com.example.fakestore.model.ProductItem
 import kotlin.math.roundToInt
 
 @Composable

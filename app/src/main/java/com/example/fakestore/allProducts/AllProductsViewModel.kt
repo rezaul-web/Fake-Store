@@ -2,8 +2,8 @@ package com.example.fakestore.allProducts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fakestore.models.allproducts.AllProducts
-import com.example.fakestore.models.allproducts.ProductItem
+import com.example.fakestore.model.AllProducts
+import com.example.fakestore.model.ProductItem
 import com.example.fakestore.network.NetworkRepository
 import com.example.fakestore.network.Resource
 import com.example.fakestore.offer.DiscountedProduct

@@ -24,11 +24,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.example.fakestore.models.allproducts.ProductItem
+import com.example.fakestore.model.ProductItem
 import kotlin.math.roundToInt
 
 @Composable
-fun ProductCard(product: ProductItem,onProductClick:()->Unit) {
+fun ProductCard(product: ProductItem, onProductClick:()->Unit) {
     val rating = product.rating
     Card (
         onClick = {
