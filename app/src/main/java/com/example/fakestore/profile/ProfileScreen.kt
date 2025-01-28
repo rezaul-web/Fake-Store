@@ -44,6 +44,7 @@ fun ProfileScreen(
     var showDialog by remember { mutableStateOf(false) }
     var showDialogForDelete by remember { mutableStateOf(false) }
     val currentUserUid = firebaseAuth.currentUser?.uid
+    var addressToDelete by remember { mutableStateOf<Map<String, String>?>(null) }
 
     // State to hold the user profile data
     var userData by remember { mutableStateOf<Map<String, Any>?>(null) }
@@ -148,8 +149,7 @@ fun ProfileScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
-                        shape = RoundedCornerShape(16.dp),
-
+                        shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -157,20 +157,17 @@ fun ProfileScreen(
                                 .fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                           Row(modifier = Modifier.fillMaxWidth(),
-                               horizontalArrangement = Arrangement.SpaceBetween
-                               ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text(
                                     "Address Line: ${address["addressLine"] ?: "N/A"}",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
-                               // Fetch `isDefault` value safely
-                               val isDefault = address["isDefault"]
-
-                               // Display "Default" only if `isDefault` is true
-                               val text = if (isDefault=="true") "Default" else ""
-
-                               Text(text=text, color = Color.Red)
+                                val isDefault = address["isDefault"]
+                                val text = if (isDefault == "true") "Default" else ""
+                                Text(text = text, color = Color.Red)
                             }
                             Text("City: ${address["city"] ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
                             Text("State: ${address["state"] ?: "N/A"}", style = MaterialTheme.typography.bodyMedium)
@@ -183,7 +180,6 @@ fun ProfileScreen(
                             ) {
                                 OutlinedButton(
                                     onClick = {
-                                        // Navigate to the update address screen or trigger update logic
                                         navController.navigate(
                                             "updateAddress/${address["addressLine"]}/${address["city"]}/${address["state"]}/${address["postalCode"]}/${address["country"]}/${address["isDefault"]}"
                                         )
@@ -195,8 +191,7 @@ fun ProfileScreen(
 
                                 OutlinedButton(
                                     onClick = {
-                                        // Delete address logic
-                                        showDialogForDelete=true
+                                        addressToDelete = address // Set the address to delete
                                     },
                                     shape = RoundedCornerShape(12.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(
@@ -205,57 +200,53 @@ fun ProfileScreen(
                                 ) {
                                     Text("Delete Address")
                                 }
-
                             }
                         }
                     }
-                    if (showDialogForDelete) {
-                        FakeStoreAlertDialog(
-                            onConfirmation = {
-                                if (currentUserUid != null) {
+                }
 
-                                    firestore.collection("users")
-                                        .document(currentUserUid)
-                                        .collection("addresses")
-                                        .whereEqualTo("addressLine", address["addressLine"]) // Query to find the specific address
-                                        .get()
-                                        .addOnSuccessListener { querySnapshot ->
-                                            if (querySnapshot.documents.isNotEmpty()) {
-                                                val documentId = querySnapshot.documents[0].id
-                                                firestore.collection("users")
-                                                    .document(currentUserUid)
-                                                    .collection("addresses")
-                                                    .document(documentId)
-                                                    .delete()
-                                                    .addOnSuccessListener {
-                                        refreshAddress=!refreshAddress
-                                                        // Navigate back to ProfileScreen
-                                                    }
-                                                    .addOnFailureListener {
-
-                                                        errorMessage = "Failed to Delete address: ${it.message}"
-                                                    }
-                                            } else {
-
-                                                errorMessage = "Address not found for Deletion."
-                                            }
+// Show the delete dialog only if an address is selected
+                if (addressToDelete != null) {
+                    FakeStoreAlertDialog(
+                        onConfirmation = {
+                            if (currentUserUid != null) {
+                                firestore.collection("users")
+                                    .document(currentUserUid)
+                                    .collection("addresses")
+                                    .whereEqualTo("addressLine", addressToDelete!!["addressLine"])
+                                    .get()
+                                    .addOnSuccessListener { querySnapshot ->
+                                        if (querySnapshot.documents.isNotEmpty()) {
+                                            val documentId = querySnapshot.documents[0].id
+                                            firestore.collection("users")
+                                                .document(currentUserUid)
+                                                .collection("addresses")
+                                                .document(documentId)
+                                                .delete()
+                                                .addOnSuccessListener {
+                                                    refreshAddress = !refreshAddress
+                                                }
+                                                .addOnFailureListener {
+                                                    errorMessage = "Failed to delete address: ${it.message}"
+                                                }
+                                        } else {
+                                            errorMessage = "Address not found for deletion."
                                         }
-                                        .addOnFailureListener {
-
-                                            errorMessage = "Failed to query address: ${it.message}"
-                                        }
-                                } else {
-                                    errorMessage = "User is not logged in."
-                                }
-                                showDialogForDelete = false
-                            },
-                            onDismissRequest = {
-                                showDialogForDelete = false
-                            },
-                            dialogTitle = "Delete Address",
-                            dialogText = "You Are about to Delete this Address"
-                        )
-                    }
+                                    }
+                                    .addOnFailureListener {
+                                        errorMessage = "Failed to query address: ${it.message}"
+                                    }
+                            } else {
+                                errorMessage = "User is not logged in."
+                            }
+                            addressToDelete = null // Close the dialog
+                        },
+                        onDismissRequest = {
+                            addressToDelete = null // Close the dialog
+                        },
+                        dialogTitle = "Delete Address",
+                        dialogText = "You are about to delete this address."
+                    )
                 }
             } else {
                 Text(

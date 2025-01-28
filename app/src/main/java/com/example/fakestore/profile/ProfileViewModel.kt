@@ -17,6 +17,7 @@ class ProfileViewModel @Inject constructor(
 ) : ViewModel() {
     private val uuid: String? = firebaseAuth.currentUser?.uid
 
+
     fun saveUserAddress(address: UserAddress) {
         if (uuid == null) return
 
@@ -112,6 +113,100 @@ class ProfileViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("Address", "Unexpected error: ${e.message}")
+            }
+        }
+    }
+
+
+    fun updateAddress(
+        isDefault: Boolean,
+        addressLine: String,
+        city: String,
+        state: String,
+        postalCode: String,
+        country: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit,
+        currentUserUid:String?
+    ) {
+        if (currentUserUid == null) {
+            onFailure("User is not logged in.")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val updatedAddress = mapOf(
+                    "isDefault" to isDefault,
+                    "addressLine" to addressLine,
+                    "city" to city,
+                    "state" to state,
+                    "postalCode" to postalCode,
+                    "country" to country
+                )
+
+                val addressesCollection = firestore.collection("users")
+                    .document(currentUserUid)
+                    .collection("addresses")
+
+                val querySnapshot = addressesCollection
+                    .whereEqualTo("addressLine", addressLine)
+                    .get()
+                    .await()
+
+                if (querySnapshot.documents.isNotEmpty()) {
+                    val documentId = querySnapshot.documents[0].id
+
+                    if (isDefault) {
+                        // Set other addresses to non-default
+                        val allAddresses = addressesCollection
+                            .whereEqualTo("isDefault", true)
+                            .get()
+                            .await()
+
+                        for (doc in allAddresses.documents) {
+                            doc.reference.update("isDefault", false).await()
+                        }
+                    }
+
+                    // Update the address
+                    addressesCollection.document(documentId).set(updatedAddress).await()
+                    onSuccess()
+                } else {
+                    onFailure("Address not found for update.")
+                }
+            } catch (e: Exception) {
+                onFailure("Failed to update address: ${e.message}")
+            }
+        }
+    }
+
+    fun makeSingleAddressDefault() {
+        if (uuid == null) {
+
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val addressesCollection = firestore.collection("users")
+                    .document(uuid)
+                    .collection("addresses")
+
+                val querySnapshot = addressesCollection.get().await()
+
+                if (querySnapshot.documents.size == 1) {
+                    val documentId = querySnapshot.documents[0].id
+
+                    // Update the only address to be default
+                    addressesCollection.document(documentId).update("isDefault", true).await()
+                    Log.d("Address", "Only address made default.")
+
+                } else {
+
+                }
+            } catch (e: Exception) {
+
             }
         }
     }
