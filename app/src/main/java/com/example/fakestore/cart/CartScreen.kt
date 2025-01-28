@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,9 +18,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.example.fakestore.R
 import com.example.fakestore.utils.FakeStoreAlertDialog
 import kotlin.math.roundToInt
 
@@ -49,7 +52,14 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel()) {
                 CartItemView(item, onDelete = {
                     currentItem=item
                     showDialog=true
-                })  // Composable for displaying individual cart item
+                },
+                    onDecrement = {
+                        cartViewModel.updateCartItemQuantity(item.productId,false)
+                    },
+                    onIncrement = {
+                        cartViewModel.updateCartItemQuantity(item.productId,true)
+                    }
+                    )  // Composable for displaying individual cart item
             }
             item {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -96,18 +106,22 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun CartItemView(cartItem: CartItem,onDelete:()->Unit ) {
-    // Layout for each cart item
+fun CartItemView(
+    cartItem: CartItem,
+    onDelete: () -> Unit,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),  // Spacing between items
-        shape = RoundedCornerShape(8.dp),  // Rounded corners for the card
+            .padding(4.dp),
+        shape = RoundedCornerShape(8.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),  // Padding inside the card
+                .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -116,36 +130,64 @@ fun CartItemView(cartItem: CartItem,onDelete:()->Unit ) {
                 model = cartItem.imageUrl,
                 contentDescription = cartItem.name,
                 modifier = Modifier
-                    .size(80.dp)  // Size of the image
+                    .size(80.dp)
                     .aspectRatio(1f)
             )
 
             // Product Details Column
             Column(
-                modifier = Modifier.weight(1f)  // Ensure this takes up available space
+                modifier = Modifier.weight(1f)
             ) {
                 Text(text = cartItem.name, style = MaterialTheme.typography.titleSmall)
                 Text(
                     text = "Price: \u20B9${"%.2f".format((cartItem.price * 85))}",
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Text(
-                    text = "Quantity: ${cartItem.quantity}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Quantity:",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Text(
+                        text = "${cartItem.quantity}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                }
             }
 
             // Delete Button
-            IconButton(
-                onClick = { onDelete() }  // Trigger delete on button click
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,  // Default delete icon
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error
-                )
+         Column    {
+             IconButton(onClick = { onIncrement() }) {
+                 Icon(
+                     imageVector = Icons.Default.Add,
+                     contentDescription = "Increase Quantity",
+                     tint = MaterialTheme.colorScheme.primary
+                 )
+             }
+             IconButton(onClick = { onDecrement() }) {
+                 Icon(
+                     painter = painterResource(R.drawable.baseline_minimize_24),
+                     contentDescription = "Decrease Quantity",
+                     tint = MaterialTheme.colorScheme.primary
+                 )
+             }
+                IconButton(
+                    onClick = { onDelete() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
 }
+
 

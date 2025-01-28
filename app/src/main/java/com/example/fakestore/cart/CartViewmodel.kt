@@ -24,48 +24,38 @@ class CartViewModel @Inject constructor(
     val cartItems = _cartItems
 
     init {
-        Log.d("CartViewModel", "User UID: $uuid")
         getCartItems()
     }
 
-    // Function to add items to the cart
     fun addToCart(productId: String, name: String, price: Double, quantity: Int, imageUrl: String) {
-        if (uuid == null) {
-            Log.e("CartViewModel", "User is not authenticated")
-            return
-        }
-
-        // Create a map of product data
-        val productData = mapOf(
-            "productId" to productId,
-            "name" to name,
-            "price" to price,
-            "quantity" to quantity,
-            "imageUrl" to imageUrl,
-        )
+        if (uuid == null) return
 
         viewModelScope.launch {
             try {
-                // Reference to the user's cart collection
                 val cartRef = firestore.collection("users")
                     .document(uuid)
                     .collection("cart")
 
-                // Add the product data to the cart
-                cartRef.add(productData)
-                    .addOnSuccessListener {
-                        Log.d("CartViewModel", "Product added successfully: $productData")
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.e("CartViewModel", "Failed to add product to cart", exception)
-                    }
-            } catch (e: Exception) {
-                Log.e("CartViewModel", "Unexpected error while adding product to cart", e)
+                val querySnapshot = cartRef.whereEqualTo("productId", productId).get().await()
+
+                if (querySnapshot.isEmpty) {
+                    val productData = mapOf(
+                        "productId" to productId,
+                        "name" to name,
+                        "price" to price,
+                        "quantity" to quantity,
+                        "imageUrl" to imageUrl
+                    )
+                    cartRef.add(productData)
+                } else {
+                    val documentId = querySnapshot.documents.first().id
+                    val currentQuantity = querySnapshot.documents.first().getLong("quantity") ?: 0
+                    cartRef.document(documentId).update("quantity", currentQuantity + 1)
+                }
+            } catch (_: Exception) {
             }
         }
     }
-
-    // Function to get cart items with real-time updates
     private fun getCartItems() {
         if (uuid == null) {
             Log.e("CartViewModel", "User is not authenticated")
@@ -99,7 +89,6 @@ class CartViewModel @Inject constructor(
             Log.d("CartViewModel", "Cart items updated: $items")
         }
     }
-    // Function to delete an item from the cart
     fun deleteFromCart(cartItem: CartItem) {
         if (uuid == null) {
             Log.e("CartViewModel", "User is not authenticated")
@@ -108,37 +97,57 @@ class CartViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Reference to the user's cart collection
                 val cartRef = firestore.collection("users")
                     .document(uuid)
                     .collection("cart")
 
-                // Find the document with the matching productId
                 val querySnapshot = cartRef.whereEqualTo("productId", cartItem.productId).get().await()
 
                 if (querySnapshot.isEmpty) {
-                    Log.e("CartViewModel", "Cart item with productId ${cartItem.productId} not found")
+
                     return@launch
                 }
 
-                // Get the first document matching the productId
                 val documentId = querySnapshot.documents.first().id
 
-                // Delete the document using the actual Firestore document ID
                 cartRef.document(documentId).delete().await()
-
-                // Log success
-                Log.d("CartViewModel", "Product deleted successfully: ${cartItem.name}")
             } catch (e: Exception) {
-                Log.e("CartViewModel", "Unexpected error while deleting product from cart", e)
+
             }
         }
-
-        // Refresh the cart items after deletion
         getCartItems()
     }
 
+    fun updateCartItemQuantity(productId: String, increment: Boolean) {
+        if (uuid == null) return
 
+        viewModelScope.launch {
+            try {
+                val cartRef = firestore.collection("users")
+                    .document(uuid)
+                    .collection("cart")
+
+                val querySnapshot = cartRef.whereEqualTo("productId", productId).get().await()
+
+                if (querySnapshot.isEmpty) return@launch
+
+                val documentId = querySnapshot.documents.first().id
+                val currentQuantity = querySnapshot.documents.first().getLong("quantity") ?: 0
+
+                if (increment) {
+                    cartRef.document(documentId).update("quantity", currentQuantity + 1)
+                } else {
+                    if (currentQuantity > 1) {
+                        cartRef.document(documentId).update("quantity", currentQuantity - 1)
+                    } else {
+                        cartRef.document(documentId).delete().await()
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+        getCartItems()
+    }
 }
 
 

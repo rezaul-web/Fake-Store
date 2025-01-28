@@ -35,8 +35,8 @@ fun ProductCard(product: ProductItem,onProductClick:()->Unit) {
             onProductClick()
         }, // Handle the click action if needed
         modifier = Modifier
-            .width(164.dp)
-            .padding(8.dp),
+            .width(180.dp)
+            .padding(4.dp),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Gray.copy(alpha = 0.5f)

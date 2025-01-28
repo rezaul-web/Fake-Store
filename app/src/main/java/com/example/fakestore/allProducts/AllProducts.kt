@@ -2,17 +2,21 @@ package com.example.fakestore.allProducts
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
@@ -26,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,21 +45,23 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.fakestore.R
 import com.example.fakestore.home.HomeViewModel
+import com.example.fakestore.home.ProductItem
 import com.example.fakestore.network.Resource
 
-//This is the main Screen of the app
 @Composable
 fun AllProducts(viewModel: HomeViewModel = hiltViewModel(), navController: NavController) {
     val allProducts by viewModel.allProducts.collectAsState()
 
     var searchQuery by remember { mutableStateOf(TextFieldValue()) }
-    var selectedCategory by remember { mutableStateOf("All") }
 
     Column(
-        modifier = Modifier.padding(4.dp),
+        modifier = Modifier
+            .padding(4.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Search Bar
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -79,17 +86,24 @@ fun AllProducts(viewModel: HomeViewModel = hiltViewModel(), navController: NavCo
             },
             shape = RoundedCornerShape(20.dp)
         )
+
+        // Offer Image
         Box(
             modifier = Modifier
                 .height(189.dp)
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
+                .clickable {
+                    navController.navigate("offer_screen")
+                }
         ) {
-            Image(painter = painterResource(R.drawable.offer), contentDescription = null,
+            Image(
+                painter = painterResource(R.drawable.offer), contentDescription = null,
                 modifier = Modifier.matchParentSize()
-                )
+            )
         }
 
+        // Products
         when (val state = allProducts) {
             is Resource.Error -> {
                 Text(
@@ -112,23 +126,17 @@ fun AllProducts(viewModel: HomeViewModel = hiltViewModel(), navController: NavCo
             }
 
             is Resource.Success -> {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2), // 2 columns fixed
-                    contentPadding = PaddingValues(4.dp), // Padding around the grid
-                    horizontalArrangement = Arrangement.spacedBy(8.dp), // Space between columns
-                    verticalArrangement = Arrangement.spacedBy(8.dp), // Space between rows
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    items(state.data.size) { index ->
-                        val product = state.data[index]
-
-                        ProductCard(
-                            product = product,
-                            onProductClick = {
-                                viewModel.selectProduct(product) // Only select the product, don't trigger network
-                                navController.navigate("detail_screen") // Navigate to detail screen
+                // Display products in rows of 2
+                state.data.take(8).chunked(2).forEach { rowProducts ->
+                    Row(modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                        ) {
+                        rowProducts.forEach { product ->
+                            ProductCard(product = product) {
+                                viewModel.selectProduct(product)
+                                navController.navigate("detail_screen")
                             }
-                        )
+                        }
                     }
                 }
             }

@@ -39,6 +39,8 @@ import com.example.fakestore.home.FakeStoreBottomBar
 import com.example.fakestore.home.HomeScreen
 import com.example.fakestore.home.HomeViewModel
 import com.example.fakestore.cart.CartScreen
+import com.example.fakestore.offer.DetailScreenDiscounted
+import com.example.fakestore.offer.OfferScreen
 import com.example.fakestore.ordersmanagement.OrderScreen
 import com.example.fakestore.profile.ProfileScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -99,9 +101,17 @@ fun MainApp(
                     sharedViewModel = viewModel
                 )
             }
+            composable(route = "detail_screen_two") {
+                DetailScreenDiscounted(
+                    onBuyNow = { /* Handle Buy Now */ },
+                    onAddToCart = { /* Handle Add to Cart */ },
+                    sharedViewModel = viewModel
+                )
+            }
             composable(route = "cart_screen") { CartScreen() }
             composable(route = "profile_screen") { ProfileScreen(navController = navController) }
             composable(route = "orders_screen") { OrderScreen() }
+            composable(route = "offer_screen") { OfferScreen(navController = navController) }
         }
     }
 }

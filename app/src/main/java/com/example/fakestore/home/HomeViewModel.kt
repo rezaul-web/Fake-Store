@@ -6,6 +6,7 @@ import com.example.fakestore.models.allproducts.AllProducts
 import com.example.fakestore.models.allproducts.ProductItem
 import com.example.fakestore.network.NetworkRepository
 import com.example.fakestore.network.Resource
+import com.example.fakestore.offer.DiscountedProduct
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,8 +23,14 @@ class HomeViewModel @Inject constructor(
     private val _selectedProduct = MutableStateFlow<ProductItem?>(null)
     val selectedProduct = _selectedProduct
 
+    private val _selectedDiscountedProduct = MutableStateFlow<DiscountedProduct?>(null)
+    val selectedDisCountedProduct = _selectedDiscountedProduct
+
     fun selectProduct(product: ProductItem) {
         _selectedProduct.value = product
+    }
+    fun selectDiscountedProduct(discountedProduct: DiscountedProduct) {
+        _selectedDiscountedProduct.value = discountedProduct
     }
 
     private val _allProducts = MutableStateFlow<Resource<AllProducts>>(Resource.Idle)
