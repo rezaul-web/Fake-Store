@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.fakestore.R
 
+//Not Yet Implemented
 @Composable
 fun HomeScreen( ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue()) }

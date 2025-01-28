@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -25,10 +24,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.fakestore.allProducts.AllProducts
 import com.example.fakestore.allProducts.DetailScreen
 import com.example.fakestore.utils.BottomBarItems
@@ -37,19 +38,21 @@ import com.example.fakestore.auth.login.LogInScreen
 import com.example.fakestore.auth.signup.SignUpScreen
 import com.example.fakestore.home.FakeStoreBottomBar
 import com.example.fakestore.home.HomeScreen
-import com.example.fakestore.home.HomeViewModel
+import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.cart.CartScreen
 import com.example.fakestore.offer.DetailScreenDiscounted
 import com.example.fakestore.offer.OfferScreen
 import com.example.fakestore.ordersmanagement.OrderScreen
 import com.example.fakestore.profile.ProfileScreen
+import com.example.fakestore.profile.UpdateAddressScreen
+import com.example.fakestore.profile.UserAddressScreen
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainApp(
     auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: AllProductsViewModel = hiltViewModel()
 ) {
     val bottomBarHiddenRoutes = listOf("auth_screen", "log_in", "sign_up","detail_screen")
 
@@ -110,8 +113,35 @@ fun MainApp(
             }
             composable(route = "cart_screen") { CartScreen() }
             composable(route = "profile_screen") { ProfileScreen(navController = navController) }
+            composable(route = "address") { UserAddressScreen(navController = navController) }
             composable(route = "orders_screen") { OrderScreen() }
             composable(route = "offer_screen") { OfferScreen(navController = navController) }
+
+
+            composable(
+                "updateAddress/{addressLine}/{city}/{state}/{postalCode}/{country}",
+                arguments = listOf(
+                    navArgument("addressLine") { type = NavType.StringType },
+                    navArgument("city") { type = NavType.StringType },
+                    navArgument("state") { type = NavType.StringType },
+                    navArgument("postalCode") { type = NavType.StringType },
+                    navArgument("country") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val addressLine = backStackEntry.arguments?.getString("addressLine") ?: ""
+                val city = backStackEntry.arguments?.getString("city") ?: ""
+                val state = backStackEntry.arguments?.getString("state") ?: ""
+                val postalCode = backStackEntry.arguments?.getString("postalCode") ?: ""
+                val country = backStackEntry.arguments?.getString("country") ?: ""
+                UpdateAddressScreen(
+                    navController = navController,
+                    addressLine = addressLine,
+                    city = city,
+                    state = state,
+                    postalCode = postalCode,
+                    country = country
+                )
+            }
         }
     }
 }

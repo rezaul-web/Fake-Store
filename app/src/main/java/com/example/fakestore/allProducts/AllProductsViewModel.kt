@@ -1,4 +1,4 @@
-package com.example.fakestore.home
+package com.example.fakestore.allProducts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class AllProductsViewModel @Inject constructor(
     private val networkRepository:
     NetworkRepository
 ) :

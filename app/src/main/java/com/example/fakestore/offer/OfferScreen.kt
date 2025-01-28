@@ -3,7 +3,6 @@ package com.example.fakestore.offer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,15 +34,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import com.example.fakestore.allProducts.ProductCard
 import com.example.fakestore.allProducts.StarRatingBar
-import com.example.fakestore.home.HomeViewModel
+import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.models.allproducts.ProductItem
 import com.example.fakestore.network.Resource
 import kotlin.math.roundToInt
 
 @Composable
-fun OfferScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: NavController) {
+fun OfferScreen(homeViewModel: AllProductsViewModel = hiltViewModel(), navController: NavController) {
     val allProducts by homeViewModel.allProducts.collectAsState()
     when (val state = allProducts) {
         is Resource.Error -> {
