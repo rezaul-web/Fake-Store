@@ -26,6 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.fakestore.R
 import com.example.fakestore.allProducts.AllProductsViewModel
@@ -50,8 +52,10 @@ import kotlin.math.roundToInt
 @Composable
 fun OrderSummaryScreen(
     allProductsViewModel: AllProductsViewModel,
-    ordersViewModel: OrdersViewModel = hiltViewModel()
+    ordersViewModel: OrdersViewModel = hiltViewModel(),
+    navController: NavController
 ) {
+    val defaultAddress by ordersViewModel.defaultAddress.collectAsState()
 
     val selectedProducts by allProductsViewModel.selectedProduct.collectAsState()
     val deliveryCharge by ordersViewModel.deliveryCharge.collectAsState()
@@ -128,9 +132,9 @@ fun PaymentCard(totalPrice: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 16.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(40.dp)
+        shape = RoundedCornerShape(20.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

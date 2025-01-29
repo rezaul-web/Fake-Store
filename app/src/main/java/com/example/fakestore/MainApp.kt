@@ -39,6 +39,7 @@ import com.example.fakestore.auth.signup.SignUpScreen
 import com.example.fakestore.home.FakeStoreBottomBar
 import com.example.fakestore.home.HomeScreen
 import com.example.fakestore.allProducts.AllProductsViewModel
+import com.example.fakestore.cart.BuyFromCart
 import com.example.fakestore.cart.CartScreen
 import com.example.fakestore.offer.DetailScreenDiscounted
 import com.example.fakestore.offer.OfferScreen
@@ -56,7 +57,7 @@ fun MainApp(
     auth: FirebaseAuth = FirebaseAuth.getInstance(),
     viewModel: AllProductsViewModel = hiltViewModel()
 ) {
-    val bottomBarHiddenRoutes = listOf("auth_screen", "log_in", "sign_up","detail_screen","summery_screen","payment_screen")
+    val bottomBarHiddenRoutes = listOf("auth_screen", "log_in", "sign_up","detail_screen","summery_screen","payment_screen","buy_from_cart")
 
     val user = auth.currentUser
     val startDestination = if (user == null) "auth_screen" else "all_products"
@@ -115,7 +116,7 @@ fun MainApp(
                     sharedViewModel = viewModel
                 )
             }
-            composable(route = "cart_screen") { CartScreen() }
+            composable(route = "cart_screen") { CartScreen(navController = navController) }
             composable(route = "profile_screen") { ProfileScreen(navController = navController) }
             composable(route = "address") { UserAddressScreen(navController = navController) }
             composable(route = "orders_screen") { OrderScreen() }
@@ -153,11 +154,14 @@ fun MainApp(
             composable(route = "summery_screen"
             ) {
 
-                OrderSummaryScreen(allProductsViewModel = viewModel)
+                OrderSummaryScreen(allProductsViewModel = viewModel,navController=navController)
             }
 
             composable(route="payment_screen") {
                 PaymentScreen()
+            }
+            composable(route="buy_from_cart") {
+                BuyFromCart(navController = navController)
             }
 
         }

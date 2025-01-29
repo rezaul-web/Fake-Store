@@ -21,13 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.fakestore.R
 import com.example.fakestore.utils.FakeStoreAlertDialog
 import kotlin.math.roundToInt
 
 @Composable
-fun CartScreen(cartViewModel: CartViewModel = hiltViewModel()) {
+fun CartScreen(cartViewModel: CartViewModel = hiltViewModel(),
+               navController: NavController
+               ) {
     val cartItems = cartViewModel.cartItems.collectAsState()
     val totalPrice = cartItems.value.sumOf { it.price * it.quantity }
     var showDialog by remember { mutableStateOf(false) }
@@ -73,7 +76,9 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel()) {
 
                 // Checkout Button
                 Button(
-                    onClick = { /* Handle checkout logic */ },
+                    onClick = {
+                        navController.navigate("buy_from_cart")
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Proceed to Checkout")
@@ -140,7 +145,7 @@ fun CartItemView(
             ) {
                 Text(text = cartItem.name, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    text = "Price: \u20B9${"%.2f".format((cartItem.price * 85))}",
+                    text = "Price: \u20B9${((cartItem.price * 85).roundToInt())}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Row(

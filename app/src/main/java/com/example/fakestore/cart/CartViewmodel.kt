@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 @HiltViewModel
 class CartViewModel @Inject constructor(
@@ -20,10 +21,17 @@ class CartViewModel @Inject constructor(
     private val uuid: String? = firebaseAuth.currentUser?.uid
     private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
     val cartItems = _cartItems
+    private val _totalPrice =MutableStateFlow(0)
+    val totalPrice=_totalPrice
+    private val _totalQuantity =MutableStateFlow(0)
+    val totalQuantity=_totalQuantity
 
     init {
+        _totalQuantity.value=0
+        _totalPrice.value=0
         getCartItems()
     }
+
 
     fun addToCart(productId: String, name: String, price: Double, quantity: Int, imageUrl: String) {
         if (uuid == null) return
@@ -84,6 +92,11 @@ class CartViewModel @Inject constructor(
 
             // Update the cart items list in the state
             _cartItems.value = items
+            items.forEach { item->
+                _totalPrice.value+=(item.price.roundToInt() * item.quantity)
+                _totalQuantity.value+=item.quantity
+
+            }
             Log.d("CartViewModel", "Cart items updated: $items")
         }
     }
