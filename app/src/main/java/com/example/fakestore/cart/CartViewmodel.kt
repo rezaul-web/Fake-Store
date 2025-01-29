@@ -149,11 +149,3 @@ class CartViewModel @Inject constructor(
 }
 
 
-data class CartItem(
-    val productId: String,
-    val name: String,
-    val price: Double,
-    val quantity: Int,
-    val imageUrl: String
-
-)

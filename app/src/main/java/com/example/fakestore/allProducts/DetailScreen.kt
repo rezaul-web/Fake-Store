@@ -32,17 +32,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
+import com.example.fakestore.cart.CartItem
 import com.example.fakestore.cart.CartViewModel
 import com.example.fakestore.model.ProductItem
 import kotlin.math.roundToInt
 
 @Composable
 fun DetailScreen(
-    onAddToCart: (ProductItem) -> Unit,
-    onBuyNow: (ProductItem) -> Unit,
     sharedViewModel: AllProductsViewModel,
-    cartViewmodel: CartViewModel = hiltViewModel()
+    cartViewmodel: CartViewModel = hiltViewModel(),
+    navController: NavController
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val product by sharedViewModel.selectedProduct.collectAsState()
@@ -132,14 +133,30 @@ fun DetailScreen(
                 Text("Add to Cart")
             }
             Button(
-                onClick = { product?.let { onBuyNow(it) } },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp),
+                onClick = {
+                    product?.let {
+
+                        navController.navigate("summery_screen")
+                    }
+                },
+                modifier = Modifier.weight(1f).padding(start = 8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
                 Text("Buy Now")
             }
+
+
+
+
         }
     }
+}
+fun ProductItem.toCartItem():CartItem {
+  return  CartItem(
+        productId = this.id.toString(),
+        name = this.title,
+        price =this. price,
+        imageUrl =this.image,
+        quantity = 1
+    )
 }

@@ -43,6 +43,8 @@ import com.example.fakestore.cart.CartScreen
 import com.example.fakestore.offer.DetailScreenDiscounted
 import com.example.fakestore.offer.OfferScreen
 import com.example.fakestore.ordersmanagement.OrderScreen
+import com.example.fakestore.ordersmanagement.OrderSummaryScreen
+import com.example.fakestore.ordersmanagement.PaymentScreen
 import com.example.fakestore.profile.ProfileScreen
 import com.example.fakestore.profile.UpdateAddressScreen
 import com.example.fakestore.profile.UserAddressScreen
@@ -54,7 +56,7 @@ fun MainApp(
     auth: FirebaseAuth = FirebaseAuth.getInstance(),
     viewModel: AllProductsViewModel = hiltViewModel()
 ) {
-    val bottomBarHiddenRoutes = listOf("auth_screen", "log_in", "sign_up","detail_screen")
+    val bottomBarHiddenRoutes = listOf("auth_screen", "log_in", "sign_up","detail_screen","summery_screen","payment_screen")
 
     val user = auth.currentUser
     val startDestination = if (user == null) "auth_screen" else "all_products"
@@ -73,7 +75,10 @@ fun MainApp(
                 )
             }
         },
-        topBar = {FakeStoreTopAppBar(scrollBehavior = scrollBehavior)},
+        topBar = {
+           if (currentRoute !in bottomBarHiddenRoutes) { FakeStoreTopAppBar(scrollBehavior = scrollBehavior) }
+
+                 },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         NavHost(
@@ -99,9 +104,8 @@ fun MainApp(
             composable(route = "sign_up") { SignUpScreen(navController = navController) }
             composable(route = "detail_screen") {
                 DetailScreen(
-                    onBuyNow = { /* Handle Buy Now */ },
-                    onAddToCart = { /* Handle Add to Cart */ },
-                    sharedViewModel = viewModel
+                    sharedViewModel = viewModel,
+                    navController = navController
                 )
             }
             composable(route = "detail_screen_two") {
@@ -146,6 +150,16 @@ fun MainApp(
                     country = country
                 )
             }
+            composable(route = "summery_screen"
+            ) {
+
+                OrderSummaryScreen(allProductsViewModel = viewModel)
+            }
+
+            composable(route="payment_screen") {
+                PaymentScreen()
+            }
+
         }
     }
 }

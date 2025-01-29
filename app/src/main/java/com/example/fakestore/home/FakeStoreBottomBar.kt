@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -22,7 +23,7 @@ fun FakeStoreBottomBar(icons: List<NavigationItem>, navController: NavController
     AnimatedBottomBar(
         selectedItem = selectedItem,
         itemSize = icons.take(3).size,
-        containerColor =MaterialTheme.colorScheme.surface,
+        containerColor = Color.Cyan.copy(alpha = .2f),
         indicatorStyle = IndicatorStyle.NONE
     ) {
         icons.forEachIndexed { index, navigationItem ->
@@ -44,7 +45,7 @@ fun FakeStoreBottomBar(icons: List<NavigationItem>, navController: NavController
                 },
                 imageVector = navigationItem.icon,
                 label = navigationItem.title,
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = Color.Cyan.copy(alpha = .2f)
 
             )
 
