@@ -4,8 +4,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.List
-import com.example.fakestore.home.NavigationItem
+import com.example.fakestore.mainapp.NavigationItem
 
 object BottomBarItems {
  

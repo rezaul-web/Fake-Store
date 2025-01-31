@@ -1,6 +1,5 @@
-package com.example.fakestore.home
+package com.example.fakestore.mainapp
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf

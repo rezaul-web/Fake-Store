@@ -240,7 +240,7 @@ fun SummeryItemCard(
                     // Quantity Text
                     Text(
                         text = "Quantity: $quantity",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp)
                     )
 
                     // Increase Quantity Button
@@ -248,7 +248,7 @@ fun SummeryItemCard(
                         onClick = { onIncrease() }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            painter = painterResource(R.drawable.plus_circle_svgrepo_com ),
                             contentDescription = "Increase Quantity"
                         )
                     }
@@ -257,7 +257,7 @@ fun SummeryItemCard(
                         enabled = quantity > 1 // Disable the button if quantity is 1
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.baseline_minimize_24),
+                            painter = painterResource(R.drawable.minus_svgrepo_com),
                             contentDescription = "Decrease Quantity",
                             tint = Color.Black
                         )

@@ -86,7 +86,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
 
     implementation (libs.bottombar)
-
+    implementation ("com.google.accompanist:accompanist-navigation-animation:0.31.5-beta")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
 }
