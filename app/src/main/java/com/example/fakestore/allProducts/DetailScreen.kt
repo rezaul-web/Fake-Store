@@ -2,6 +2,7 @@ package com.example.fakestore.allProducts
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,9 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
-import com.example.fakestore.cart.CartItem
 import com.example.fakestore.cart.CartViewModel
-import com.example.fakestore.model.ProductItem
 import kotlin.math.roundToInt
 
 @Composable
@@ -52,6 +51,7 @@ fun DetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -150,13 +150,4 @@ fun DetailScreen(
 
         }
     }
-}
-fun ProductItem.toCartItem():CartItem {
-  return  CartItem(
-        productId = this.id.toString(),
-        name = this.title,
-        price =this. price,
-        imageUrl =this.image,
-        quantity = 1
-    )
 }

@@ -1,5 +1,6 @@
 package com.example.fakestore.cart
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -39,7 +41,9 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel(),
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),  // Add padding for outer spacing
+            .background(Color.White)
+            .padding(16.dp)
+            ,  // Add padding for outer spacing
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -68,7 +72,8 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel(),
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Total : \u20B9${((totalPrice ?: 1.9) * 85).roundToInt()}",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.displaySmall,
+
                 )
             }
             item {
@@ -79,7 +84,8 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel(),
                     onClick = {
                         navController.navigate("buy_from_cart")
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Proceed to Checkout")
                 }
@@ -122,6 +128,8 @@ fun CartItemView(
             .fillMaxWidth()
             .padding(4.dp),
         shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
     ) {
         Row(
             modifier = Modifier

@@ -172,6 +172,7 @@ fun MainApp(
 @Composable
 fun FakeStoreTopAppBar(scrollBehavior: TopAppBarScrollBehavior) {
     TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Red),
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),

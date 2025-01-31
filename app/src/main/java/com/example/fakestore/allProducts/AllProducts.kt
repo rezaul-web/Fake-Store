@@ -1,6 +1,7 @@
 package com.example.fakestore.allProducts
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import androidx.navigation.NavController
 import com.example.fakestore.R
 import com.example.fakestore.network.Resource
 
+
 @Composable
 fun AllProducts(viewModel: AllProductsViewModel = hiltViewModel(), navController: NavController) {
     val allProducts by viewModel.allProducts.collectAsState()
@@ -47,6 +49,7 @@ fun AllProducts(viewModel: AllProductsViewModel = hiltViewModel(), navController
 
     Column(
         modifier = Modifier
+            .background(Color.White)
             .padding(4.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -118,7 +121,7 @@ fun AllProducts(viewModel: AllProductsViewModel = hiltViewModel(), navController
 
             is Resource.Success -> {
                 // Display products in rows of 2
-                state.data.take(8).chunked(2).forEach { rowProducts ->
+                state.data.chunked(2).forEach { rowProducts ->
                     Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                         ) {

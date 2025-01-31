@@ -39,8 +39,9 @@ fun ProductCard(product: ProductItem, onProductClick:()->Unit) {
             .padding(4.dp),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Gray.copy(alpha = 0.5f)
-        )
+            containerColor = Color.White,
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -77,7 +78,6 @@ fun ProductCard(product: ProductItem, onProductClick:()->Unit) {
             Text(
                 text = product.description,
                 fontSize = 12.sp,
-                color = Color.White,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,

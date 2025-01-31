@@ -1,5 +1,6 @@
 package com.example.fakestore.offer
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,56 +42,68 @@ import com.example.fakestore.network.Resource
 import kotlin.math.roundToInt
 
 @Composable
-fun OfferScreen(homeViewModel: AllProductsViewModel = hiltViewModel(), navController: NavController) {
+fun OfferScreen(
+    homeViewModel: AllProductsViewModel = hiltViewModel(),
+    navController: NavController
+) {
     val allProducts by homeViewModel.allProducts.collectAsState()
-    when (val state = allProducts) {
-        is Resource.Error -> {
-            Text(
-                text = state.message ?: "An error occurred.",
-                color = Color.Red,
-                modifier = Modifier.padding(16.dp),
-                textAlign = TextAlign.Center
-            )
-            Button(onClick = { homeViewModel.getAllProducts() }) {
-                Text("Retry")
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.White),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+        ) {
+
+        when (val state = allProducts) {
+            is Resource.Error -> {
+                Text(
+                    text = state.message ?: "An error occurred.",
+                    color = Color.Red,
+                    modifier = Modifier.padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
+                Button(onClick = { homeViewModel.getAllProducts() }) {
+                    Text("Retry")
+                }
             }
-        }
 
-        Resource.Idle -> {
-            Text("Idle State. Start fetching products.")
-        }
+            Resource.Idle -> {
+                Text("Idle State. Start fetching products.")
+            }
 
-        Resource.Loading -> {
-            CircularProgressIndicator()
-        }
+            Resource.Loading -> {
+                CircularProgressIndicator()
+            }
 
-        is Resource.Success -> {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2), // 2 columns fixed
-                contentPadding = PaddingValues(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(state.data.size) { index ->
-                    val product = state.data[index]
+            is Resource.Success -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2), // 2 columns fixed
+                    contentPadding = PaddingValues(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(state.data.size) { index ->
+                        val product = state.data[index]
 
-                    // Generate random discount and create a DiscountedProduct
-                    val discountPercent = (20..40).random()
-                    val discountedPrice = ((product.price * 85) * (1 - discountPercent / 100f)).roundToInt()
-                    val discountedProduct = DiscountedProduct(
-                        originalProduct = product,
-                        discountedPrice = discountedPrice,
-                        discountPercent = discountPercent
-                    )
+                        // Generate random discount and create a DiscountedProduct
+                        val discountPercent = (20..40).random()
+                        val discountedPrice =
+                            ((product.price * 85) * (1 - discountPercent / 100f)).roundToInt()
+                        val discountedProduct = DiscountedProduct(
+                            originalProduct = product,
+                            discountedPrice = discountedPrice,
+                            discountPercent = discountPercent
+                        )
 
-                    ProductCardWithDiscount(
-                        discountedProduct = discountedProduct,
-                        onProductClick = {
-                            homeViewModel.selectDiscountedProduct(discountedProduct)
-                            navController.navigate("detail_screen_two")
-                        }
-                    )
+                        ProductCardWithDiscount(
+                            discountedProduct = discountedProduct,
+                            onProductClick = {
+                                homeViewModel.selectDiscountedProduct(discountedProduct)
+                                navController.navigate("detail_screen_two")
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -109,8 +122,9 @@ fun ProductCardWithDiscount(discountedProduct: DiscountedProduct, onProductClick
             .padding(4.dp),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Gray.copy(alpha = 0.5f)
-        )
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -146,7 +160,6 @@ fun ProductCardWithDiscount(discountedProduct: DiscountedProduct, onProductClick
             Text(
                 text = product.description,
                 fontSize = 12.sp,
-                color = Color.White,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
@@ -186,9 +199,6 @@ fun ProductCardWithDiscount(discountedProduct: DiscountedProduct, onProductClick
         }
     }
 }
-
-
-
 
 
 data class DiscountedProduct(

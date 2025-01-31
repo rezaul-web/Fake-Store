@@ -23,7 +23,7 @@ fun FakeStoreBottomBar(icons: List<NavigationItem>, navController: NavController
     AnimatedBottomBar(
         selectedItem = selectedItem,
         itemSize = icons.take(3).size,
-        containerColor = Color.Cyan.copy(alpha = .2f),
+        containerColor = Color.Red,
         indicatorStyle = IndicatorStyle.NONE
     ) {
         icons.forEachIndexed { index, navigationItem ->
@@ -45,7 +45,7 @@ fun FakeStoreBottomBar(icons: List<NavigationItem>, navController: NavController
                 },
                 imageVector = navigationItem.icon,
                 label = navigationItem.title,
-                containerColor = Color.Cyan.copy(alpha = .2f)
+                containerColor = Color.Red
 
             )
 
