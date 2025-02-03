@@ -89,4 +89,10 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-navigation-animation:0.31.5-beta")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
+    implementation(libs.stripe.android)
+    implementation (libs.stripe.java)
+
+    implementation ("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
+
+
 }

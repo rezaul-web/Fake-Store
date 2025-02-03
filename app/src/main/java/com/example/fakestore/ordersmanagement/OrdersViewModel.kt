@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+
 @HiltViewModel
 class OrdersViewModel @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -20,9 +21,9 @@ class OrdersViewModel @Inject constructor(
     init {
         provideDefaultAddress()
     }
-    private val currentUserUid = firebaseAuth.currentUser?.uid
-private val _defaultAddress=MutableStateFlow<UserAddress?>(null)
-    val defaultAddress=_defaultAddress
+
+    private val _defaultAddress = MutableStateFlow<UserAddress?>(null)
+    val defaultAddress = _defaultAddress
 
     private val _deliveryCharge = MutableStateFlow(50) // Example fixed charge
     val deliveryCharge: StateFlow<Int> = _deliveryCharge
@@ -33,8 +34,8 @@ private val _defaultAddress=MutableStateFlow<UserAddress?>(null)
     private val _quantity = MutableStateFlow(1)
     val quantity: StateFlow<Int> = _quantity
 
-  private  val _price = MutableStateFlow(0)
-    val price=_price.value
+    private val _price = MutableStateFlow(0)
+    val price = _price.value
 
     // Update quantity
     fun updateQuantity(increment: Boolean) {
@@ -46,47 +47,39 @@ private val _defaultAddress=MutableStateFlow<UserAddress?>(null)
             }
         }
     }
-    private fun provideDefaultAddress() {
-        if (currentUserUid == null) return
+
+   private fun provideDefaultAddress() {
         viewModelScope.launch {
             try {
-                // Fetch user addresses and filter for the default address
-                val addressSnapshot = firestore.collection("users")
-                    .document(currentUserUid)
-                    .collection("addresses")
-                    .whereEqualTo("isDefault", "true") // Correctly use Boolean value here
-                    .get()
-                    .await()
+                val addressSnapshot = firebaseAuth.uid?.let { uid ->
+                    firestore.collection("users")
+                        .document(uid)
+                        .collection("addresses")
+                        .whereEqualTo("isDefault", "true") // Ensure this is stored as a String
+                        .get()
+                        .await()
+                }
 
-                // Check if a default address exists
-                if (!addressSnapshot.isEmpty) {
-                    // Get the first default address from the result
+                if (addressSnapshot != null && !addressSnapshot.isEmpty) {
                     val addressData = addressSnapshot.documents.first().data
 
-                    // Map the Firestore data to a UserAddress object
-                    val address = UserAddress(
-                        isDefault = addressData?.get("isDefault") as? Boolean ?: false,
-                        addressLine = addressData?.get("addressLine") as? String ?: "",
-                        city = addressData?.get("city") as? String ?: "",
-                        state = addressData?.get("state") as? String ?: "",
-                        postalCode = addressData?.get("postalCode") as? String ?: "",
-                        country = addressData?.get("country") as? String ?: ""
-                    )
-
-                    // Update the default address state
-                    _defaultAddress.value = address
-                    Log.d("DefaultAddress", "Default Address: $address")
+                    if (addressData != null) {
+                        _defaultAddress.value = UserAddress(
+                            isDefault = addressData["isDefault"] as? String == "true", // Convert String to Boolean
+                            addressLine = addressData["addressLine"] as? String ?: "",
+                            city = addressData["city"] as? String ?: "",
+                            state = addressData["state"] as? String ?: "",
+                            postalCode = addressData["postalCode"] as? String ?: "",
+                            country = addressData["country"] as? String ?: ""
+                        )
+                    }
                 } else {
-                    // No default address found
-                    Log.d("DefaultAddress", "No default address found")
+                    _defaultAddress.value = null // No default address found
                 }
             } catch (e: Exception) {
-                // Handle any errors that occur during the fetching
                 Log.e("Error", "Error fetching default address: ${e.message}")
             }
         }
     }
-
-
 
 }

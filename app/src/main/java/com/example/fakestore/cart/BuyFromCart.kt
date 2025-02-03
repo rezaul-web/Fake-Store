@@ -92,7 +92,7 @@ fun BuyFromCart(
                 Spacer(modifier = Modifier.weight(1f))
 
                 // Footer Card with payment button
-                PaymentCard((totalPrice *85 *quantity))
+                PaymentCard((totalPrice *85 *quantity),{})
             }
         }
     }

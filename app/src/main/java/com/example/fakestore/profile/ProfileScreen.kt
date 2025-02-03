@@ -1,5 +1,6 @@
 package com.example.fakestore.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,12 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.fakestore.mainapp.Route
 import com.example.fakestore.utils.FakeStoreAlertDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -83,6 +84,8 @@ fun ProfileScreen(
                     val postalCode = document.getString("postalCode")
                     val country = document.getString("country")
 
+
+
                     if (addressLine != null && city != null && state != null && postalCode != null && country != null) {
                         mapOf(
                             "isDefault" to isDefault!!,
@@ -108,6 +111,7 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -125,7 +129,9 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
 
             ) {
                 Column(
@@ -182,7 +188,11 @@ fun ProfileScreen(
                                     onClick = {
                                         navController.navigate(
                                             "updateAddress/${address["addressLine"]}/${address["city"]}/${address["state"]}/${address["postalCode"]}/${address["country"]}/${address["isDefault"]}"
-                                        )
+                                        ){
+                                            popUpTo(Route.ProfileScreen.route) { inclusive = true } // Removes duplicate screens
+                                            launchSingleTop = true // Ensures only one instance of ProfileScreen
+
+                                        }
                                     },
                                     shape = RoundedCornerShape(12.dp)
                                 ) {

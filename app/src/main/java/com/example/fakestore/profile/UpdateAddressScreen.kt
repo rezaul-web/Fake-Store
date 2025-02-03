@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.fakestore.mainapp.Route
 import com.example.fakestore.model.UserAddress
 import com.example.fakestore.utils.FakeStoreTextField
 import com.google.firebase.auth.FirebaseAuth
@@ -140,7 +141,10 @@ fun UpdateAddressScreen(
                                     .addOnSuccessListener {
 
                                         isLoading = false
-                                        navController.navigate("profile_screen") // Navigate back to ProfileScreen
+                                        navController.navigate(Route.ProfileScreen.route) {
+                                            popUpTo(navController.currentDestination?.route ?: Route.HomeScreen.route) { inclusive = true }
+                                        }
+
                                     }
                                     .addOnFailureListener {
                                         isLoading = false

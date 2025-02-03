@@ -26,6 +26,8 @@ retrofit = "2.11.0"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.1.0"
 firebaseFirestoreKtx = "25.1.1"
+stripeAndroid = "21.3.2"
+stripeJava = "24.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,6 +63,8 @@ logging-interceptor-v500alpha11 = { module = "com.squareup.okhttp3:logging-inter
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+stripe-android = { module = "com.stripe:stripe-android", version.ref = "stripeAndroid" }
+stripe-java = { module = "com.stripe:stripe-java", version.ref = "stripeJava" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

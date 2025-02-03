@@ -1,5 +1,6 @@
 package com.example.fakestore.ordersmanagement
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,23 +48,52 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.fakestore.R
 import com.example.fakestore.allProducts.AllProductsViewModel
+import com.example.fakestore.mainapp.Route
 import com.example.fakestore.model.ProductItem
+import com.example.fakestore.model.UserAddress
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import java.time.LocalDate
+import java.util.Date
 import kotlin.math.roundToInt
 
 @Composable
 fun OrderSummaryScreen(
     allProductsViewModel: AllProductsViewModel,
     ordersViewModel: OrdersViewModel = hiltViewModel(),
-    navController: NavController
+    navController: NavController,
+    firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
+    firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
     val defaultAddress by ordersViewModel.defaultAddress.collectAsState()
-
     val selectedProducts by allProductsViewModel.selectedProduct.collectAsState()
     val deliveryCharge by ordersViewModel.deliveryCharge.collectAsState()
     val otherCharges by ordersViewModel.otherCharges.collectAsState()
     val quantity by ordersViewModel.quantity.collectAsState()
+    val context = LocalContext.current
 
+    val userId = firebaseAuth.currentUser?.uid
+    if (userId == null) {
+        Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
+        return
+    }
 
+    val ordersRef = firestore.collection("orders")
+    val order =selectedProducts.let { product->
+        mapOf(
+            "userId" to userId,
+            "quantity" to quantity,
+            "deliveryCharge" to deliveryCharge,
+            "total" to (product!!.price * 85 * quantity).roundToInt() + deliveryCharge + otherCharges,
+            "otherCharges" to otherCharges,
+            "productId" to product.id,
+            "productTitle" to product.title,
+            "imageUrl" to product.image,
+            "date" to Date(),
+            "status" to "pending",
+            "address" to defaultAddress
+        )
+    }
 
     Scaffold { paddingValues ->
         Column(
@@ -81,6 +112,7 @@ fun OrderSummaryScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             selectedProducts?.let { product ->
+
                 SummeryItemCard(
                     product,
                     quantity = quantity,
@@ -92,23 +124,67 @@ fun OrderSummaryScreen(
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(16.dp))
 
-            Column(androidx.compose.ui.Modifier.padding(6.dp))    {
+                Column(Modifier.padding(6.dp)) {
                     OrderDetailRow("Product Price:", "₹${(product.price * 85).roundToInt()}")
                     OrderDetailRow("Delivery Charges:", "₹$deliveryCharge")
                     OrderDetailRow("Other Charges:", "₹$otherCharges")
                     OrderDetailRow("Quantity:", "$quantity")
-                    OrderDetailRow("Total:", "₹${(product.price * 85 * quantity).roundToInt()}", fontWeight = FontWeight.Bold)
+                    OrderDetailRow(
+                        "Total:",
+                        "₹${(product.price * 85 * quantity).roundToInt()+deliveryCharge+otherCharges}",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+                defaultAddress?.let { AddressCard(address = it) {
+                    navController.navigate(Route.ProfileScreen.route)
+                } }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Footer Card with payment button
-                PaymentCard((product.price *85 *quantity).roundToInt())
+                PaymentCard((product.price * 85 * quantity+deliveryCharge+otherCharges).roundToInt()) {
+                    ordersRef.add(order)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
+                            navController.navigate(Route.AllProducts.route)
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            } ?: run {
+                Text("No product selected", style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
 }
 
+@Composable
+fun AddressCard(address: UserAddress,updateAddress:()->Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("Delivering to:", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
+            Text("Address Line: ${address.addressLine}", style = MaterialTheme.typography.bodyMedium)
+            Text("City: ${address.city}", style = MaterialTheme.typography.bodyMedium)
+            Text("State: ${address.state}", style = MaterialTheme.typography.bodyMedium)
+            Text("Postal Code: ${address.postalCode}", style = MaterialTheme.typography.bodyMedium)
+            Text("Country: ${address.country}", style = MaterialTheme.typography.bodyMedium)
+
+            OutlinedButton(onClick = {
+                updateAddress()
+            }) {
+                Text(text="Update Address")
+            }
+        }
+    }
+}
 @Composable
 fun OrderDetailRow(label: String, value: String, fontWeight: FontWeight = FontWeight.Normal) {
     Row(
@@ -121,13 +197,16 @@ fun OrderDetailRow(label: String, value: String, fontWeight: FontWeight = FontWe
         )
         Text(
             value,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp, fontWeight = fontWeight)
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 18.sp,
+                fontWeight = fontWeight
+            )
         )
     }
 }
 
 @Composable
-fun PaymentCard(totalPrice: Int) {
+fun PaymentCard(totalPrice: Int,putOrder:() ->Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -165,7 +244,9 @@ fun PaymentCard(totalPrice: Int) {
             }
 
             Button(
-                onClick = { /* Handle payment logic */ },
+                onClick = { /* Handle payment logic */
+                    putOrder()
+                },
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .padding(4.dp)
@@ -248,7 +329,7 @@ fun SummeryItemCard(
                         onClick = { onIncrease() }
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.plus_circle_svgrepo_com ),
+                            painter = painterResource(R.drawable.plus_circle_svgrepo_com),
                             contentDescription = "Increase Quantity"
                         )
                     }
