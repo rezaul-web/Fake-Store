@@ -103,7 +103,7 @@ class CartViewModel @Inject constructor(
         }
     }
 
-    fun deleteFromCart(cartItem: CartItem) {
+    fun deleteFromCart(productId: String) {
         if (uuid == null) {
             Log.e("CartViewModel", "User is not authenticated")
             return
@@ -115,7 +115,7 @@ class CartViewModel @Inject constructor(
                     .document(uuid)
                     .collection("cart")
 
-                val querySnapshot = cartRef.whereEqualTo("productId", cartItem.productId).get().await()
+                val querySnapshot = cartRef.whereEqualTo("productId",productId).get().await()
 
                 if (querySnapshot.isEmpty) {
 
@@ -131,6 +131,8 @@ class CartViewModel @Inject constructor(
         }
         getCartItems()
     }
+
+
 
     fun updateCartItemQuantity(productId: String, increment: Boolean) {
         if (uuid == null) return

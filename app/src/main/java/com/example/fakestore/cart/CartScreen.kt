@@ -1,5 +1,6 @@
 package com.example.fakestore.cart
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,7 +38,7 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel(),
     val cartItems = cartViewModel.cartItems.collectAsState()
     val totalPrice = cartItems.value.sumOf { it.price * it.quantity }
     var showDialog by remember { mutableStateOf(false) }
-
+    val context= LocalContext.current
     var currentItem by remember { mutableStateOf<CartItem?>(null) }
     Column(
         modifier = Modifier
@@ -82,7 +84,12 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel(),
                 // Checkout Button
                 Button(
                     onClick = {
-                        navController.navigate("buy_from_cart")
+                        if (totalPrice >0) {
+                            navController.navigate("buy_from_cart")
+                        }
+                        else {
+                            Toast.makeText(context, "Cart is Empty", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
@@ -96,7 +103,7 @@ fun CartScreen(cartViewModel: CartViewModel = hiltViewModel(),
                 onConfirmation = {
                     currentItem?.let {
                         cartViewModel.deleteFromCart(
-                            it
+                            it.productId
                         )
                     }
                     showDialog=false

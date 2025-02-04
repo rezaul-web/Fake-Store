@@ -42,12 +42,12 @@ fun BuyFromCart(
 
     ordersViewModel: OrdersViewModel = hiltViewModel(),
     navController: NavController,
-    cartViewModel: CartViewModel= hiltViewModel(),
-    firebaseAuth: FirebaseAuth=FirebaseAuth.getInstance(),
-    firestore: FirebaseFirestore=FirebaseFirestore.getInstance()
+    cartViewModel: CartViewModel = hiltViewModel(),
+    firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
+    firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
 
-val defaultAddress=ordersViewModel.defaultAddress.collectAsState()
+    val defaultAddress = ordersViewModel.defaultAddress.collectAsState()
     val deliveryCharge by ordersViewModel.deliveryCharge.collectAsState()
     val otherCharges by ordersViewModel.otherCharges.collectAsState()
     val quantity by ordersViewModel.quantity.collectAsState()
@@ -55,92 +55,101 @@ val defaultAddress=ordersViewModel.defaultAddress.collectAsState()
     val totalPrice by cartViewModel.totalPrice.collectAsState()
     val totalQuantity by cartViewModel.totalQuantity.collectAsState()
     val userId = firebaseAuth.currentUser?.uid
-    val context= LocalContext.current
+    val context = LocalContext.current
     if (userId == null) {
         Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
         return
     }
 
     val ordersRef = firestore.collection("orders")
-   val orders =cartItems.value.map { product ->
-       mapOf(
-           "userId" to userId,
-           "quantity" to product.quantity,
-           "deliveryCharge" to deliveryCharge,
-           "total" to (product.price * 85 * quantity).roundToInt() + deliveryCharge + otherCharges,
-           "otherCharges" to otherCharges,
-           "productId" to product.productId,
-           "productTitle" to product.name,
-           "imageUrl" to product.imageUrl,
-           "date" to Date(),
-           "status" to "pending",
-           "address" to defaultAddress.value
-       )
+    val orders = cartItems.value.map { product ->
+        mapOf(
+            "userId" to userId,
+            "quantity" to product.quantity,
+            "deliveryCharge" to deliveryCharge,
+            "total" to (product.price * 85 * quantity).roundToInt() + deliveryCharge + otherCharges,
+            "otherCharges" to otherCharges,
+            "productId" to product.productId,
+            "productTitle" to product.name,
+            "imageUrl" to product.imageUrl,
+            "date" to Date(),
+            "status" to "pending",
+            "address" to defaultAddress.value
+        )
 
-   }
+    }
 
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(top = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "Order Summary",
-                style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp),
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(top = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Order Summary",
+            style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp),
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-           LazyColumn {
-               items(cartItems.value.size) { index ->
-                   val item = cartItems.value[index]
-                   CartItemView(item, onDelete = {
+        LazyColumn {
+            items(cartItems.value.size) { index ->
+                val item = cartItems.value[index]
+                CartItemView(item, onDelete = {
 
-                   },
-                       onDecrement = {
-                           cartViewModel.updateCartItemQuantity(item.productId,false)
-                       },
-                       onIncrement = {
-                           cartViewModel.updateCartItemQuantity(item.productId,true)
-                       }
-                   )  // Composable for displaying individual cart item
-               }
-           }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider()
-                Spacer(modifier = Modifier.height(16.dp))
-
-            Column(Modifier.padding(6.dp))    {
-                    OrderDetailRow("Delivery Charges:", "₹$deliveryCharge")
-                    OrderDetailRow("Other Charges:", "₹$otherCharges")
-                    OrderDetailRow("Quantity:", "$totalQuantity")
-                    OrderDetailRow("Total:", "₹${(totalPrice * 85 * quantity)+deliveryCharge+otherCharges}", fontWeight = FontWeight.Bold)
-                }
-            defaultAddress.value?.let { AddressCard(address = it) {
-                navController.navigate(Route.ProfileScreen.route)
-            } }
-               
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Footer Card with payment button
-                PaymentCard((totalPrice * 85 * quantity)+deliveryCharge+otherCharges) {
-                    orders.forEach { order->
-                        ordersRef.add(order)
-                            .addOnSuccessListener {
-                                Toast.makeText(context, "Orders Placed", Toast.LENGTH_SHORT).show()
-                                navController.navigate(Route.AllProducts.route)
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
-                            }
+                },
+                    onDecrement = {
+                        cartViewModel.updateCartItemQuantity(item.productId, false)
+                    },
+                    onIncrement = {
+                        cartViewModel.updateCartItemQuantity(item.productId, true)
                     }
-                }
+                )  // Composable for displaying individual cart item
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(Modifier.padding(6.dp)) {
+            OrderDetailRow("Delivery Charges:", "₹$deliveryCharge")
+            OrderDetailRow("Other Charges:", "₹$otherCharges")
+            OrderDetailRow("Quantity:", "$totalQuantity")
+            OrderDetailRow(
+                "Total:",
+                "₹${(totalPrice * 85 * quantity) + deliveryCharge + otherCharges}",
+                fontWeight = FontWeight.Bold
+            )
+        }
+        defaultAddress.value?.let {
+            AddressCard(address = it) {
+                navController.navigate(Route.ProfileScreen.route)
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Footer Card with payment button
+        PaymentCard((totalPrice * 85 * quantity) + deliveryCharge + otherCharges) {
+            orders.forEach { order ->
+                ordersRef.add(order)
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Orders Placed", Toast.LENGTH_SHORT).show()
+
+                        cartViewModel.deleteFromCart(order["productId"].toString())
+                        navController.navigate(Route.AllProducts.route)
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+            }
+        }
+    }
+}
 
 
 
