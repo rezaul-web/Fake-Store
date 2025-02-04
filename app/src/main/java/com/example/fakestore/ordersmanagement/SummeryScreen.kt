@@ -95,12 +95,11 @@ fun OrderSummaryScreen(
         )
     }
 
-    Scaffold { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(paddingValues)
                 .padding(top = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -155,7 +154,7 @@ fun OrderSummaryScreen(
                 Text("No product selected", style = MaterialTheme.typography.bodyLarge)
             }
         }
-    }
+
 }
 
 @Composable

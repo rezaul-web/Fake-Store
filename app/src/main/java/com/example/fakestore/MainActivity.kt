@@ -39,11 +39,6 @@ class MainActivity : ComponentActivity() {
             )
             val user= FirebaseAuth.getInstance().uid
             val navController= rememberNavController()
-
-
-
-
-
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
             FakeStoreTheme {

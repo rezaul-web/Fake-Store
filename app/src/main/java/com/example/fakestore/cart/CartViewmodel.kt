@@ -68,7 +68,6 @@ class CartViewModel @Inject constructor(
             return
         }
 
-        // Use Firestore's real-time listener (addSnapshotListener) for automatic updates
         val cartRef = firestore.collection("users")
             .document(uuid)
             .collection("cart")
@@ -79,7 +78,6 @@ class CartViewModel @Inject constructor(
                 return@addSnapshotListener
             }
 
-            // Map the documents to CartItem objects
             val items = querySnapshot?.documents?.map { document ->
                 CartItem(
                     productId = document.getString("productId") ?: "",
@@ -90,16 +88,21 @@ class CartViewModel @Inject constructor(
                 )
             } ?: emptyList()
 
-            // Update the cart items list in the state
             _cartItems.value = items
-            items.forEach { item->
-                _totalPrice.value+=(item.price.roundToInt() * item.quantity)
-                _totalQuantity.value+=item.quantity
 
+            // ✅ Reset before updating to avoid accumulation
+            _totalPrice.value = 0
+            _totalQuantity.value = 0
+
+            items.forEach { item ->
+                _totalPrice.value += (item.price.roundToInt() * item.quantity)
+                _totalQuantity.value += item.quantity
             }
+
             Log.d("CartViewModel", "Cart items updated: $items")
         }
     }
+
     fun deleteFromCart(cartItem: CartItem) {
         if (uuid == null) {
             Log.e("CartViewModel", "User is not authenticated")

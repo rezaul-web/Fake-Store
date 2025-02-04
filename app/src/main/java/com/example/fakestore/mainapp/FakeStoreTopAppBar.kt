@@ -36,15 +36,6 @@ fun FakeStoreTopAppBar(
 ) {
     TopAppBar( // Adjust height of the TopAppBar
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFDF99F0).copy(.4f)),
-        navigationIcon = {
-            IconButton(onClick = {
-                navController.navigateUp()
-            }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(25.dp),
-                    tint = Color.Black
-                    ) // Smaller icon
-            }
-        },
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth()
