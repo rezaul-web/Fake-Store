@@ -56,6 +56,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalDate
 import java.util.Date
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 @Composable
 fun OrderSummaryScreen(
@@ -79,12 +80,13 @@ fun OrderSummaryScreen(
     }
 
     val ordersRef = firestore.collection("orders")
-    val order =selectedProducts.let { product->
+    val order = selectedProducts?.let { product->
         mapOf(
+            "price" to (product.price * 85).roundToInt(),
             "userId" to userId,
             "quantity" to quantity,
             "deliveryCharge" to deliveryCharge,
-            "total" to (product!!.price * 85 * quantity).roundToInt() + deliveryCharge + otherCharges,
+            "total" to (product.price * 85 * quantity).roundToInt() + deliveryCharge + otherCharges,
             "otherCharges" to otherCharges,
             "productId" to product.id,
             "productTitle" to product.title,
@@ -141,14 +143,19 @@ fun OrderSummaryScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
                 PaymentCard((product.price * 85 * quantity+deliveryCharge+otherCharges).roundToInt()) {
-                    ordersRef.add(order)
-                        .addOnSuccessListener {
-                            Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
-                            navController.navigate(Route.AllProducts.route)
-                        }
-                        .addOnFailureListener {
-                            Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
-                        }
+                    if (order != null) {
+                        ordersRef.add(order)
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
+
+                                navController.navigate(Route.AllProducts.route) {
+                                    popUpTo(navController.currentDestination?.route ?: Route.HomeScreen.route) { inclusive = true }
+                                }
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+                            }
+                    }
                 }
             } ?: run {
                 Text("No product selected", style = MaterialTheme.typography.bodyLarge)
@@ -329,7 +336,8 @@ fun SummeryItemCard(
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.plus_circle_svgrepo_com),
-                            contentDescription = "Increase Quantity"
+                            contentDescription = "Increase Quantity",
+                            Modifier.size(30.dp)
                         )
                     }
                     IconButton(
@@ -339,7 +347,8 @@ fun SummeryItemCard(
                         Icon(
                             painter = painterResource(R.drawable.minus_svgrepo_com),
                             contentDescription = "Decrease Quantity",
-                            tint = Color.Black
+                            tint = Color.Black,
+                            modifier = Modifier.size(30.dp)
                         )
                     }
                 }

@@ -53,7 +53,7 @@ fun AllProducts(viewModel: AllProductsViewModel = hiltViewModel(), navController
             .padding(4.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
         // Search Bar
         OutlinedTextField(

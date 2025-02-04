@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -64,6 +66,7 @@ fun BuyFromCart(
     val ordersRef = firestore.collection("orders")
     val orders = cartItems.value.map { product ->
         mapOf(
+            "price" to (product.price * 85).roundToInt(),
             "userId" to userId,
             "quantity" to product.quantity,
             "deliveryCharge" to deliveryCharge,
@@ -83,6 +86,7 @@ fun BuyFromCart(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .background(Color.White)
             .padding(top = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -94,9 +98,9 @@ fun BuyFromCart(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn {
-            items(cartItems.value.size) { index ->
-                val item = cartItems.value[index]
+        Column {
+           cartItems.value.forEach { item ->
+
                 CartItemView(item, onDelete = {
 
                 },

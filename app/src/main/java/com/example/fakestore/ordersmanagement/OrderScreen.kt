@@ -1,6 +1,7 @@
 package com.example.fakestore.ordersmanagement
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,9 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -53,7 +56,7 @@ fun OrderScreen(
     firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
     val userId = firebaseAuth.uid
-    val context = LocalContext.current
+    LocalContext.current
 
     val pending = "pending"
     val delivered = "delivered"
@@ -62,6 +65,8 @@ fun OrderScreen(
     val pastOrders = remember { mutableStateListOf<Map<String, Any>>() }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+
 
     LaunchedEffect(userId) {
         if (userId != null) {
@@ -101,13 +106,14 @@ fun OrderScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),  // Increased padding for better spacing
+            .background(Color.White)
+            .padding(8.dp),  // Increased padding for better spacing
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
         Text(
             "Your Orders",
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFF4392F9)),
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = Color(0xFF4392F9)),
             modifier = Modifier.padding(bottom = 8.dp) // Add some bottom padding for spacing
         )
 
@@ -150,19 +156,20 @@ fun OrderScreen(
                     item {
                         Text(
                             "Pending Orders",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black),
+                            style = MaterialTheme.typography.titleMedium.copy(color = Color.Black),
                             textAlign = TextAlign.Center,
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
-                    items(orders.reversed()) { order ->
+
+                    items(orders ) { order ->
                         OrderItemCard(order)
                     }
                     item() {
                         Spacer(Modifier.size(8.dp))
                         Text(
                             "Past Orders",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black),
+                            style = MaterialTheme.typography.titleMedium.copy(color = Color.Black),
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
@@ -186,9 +193,10 @@ fun OrderItemCard(order: Map<String, Any>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(6.dp)
+            .padding(4.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
             modifier = Modifier
@@ -215,7 +223,10 @@ fun OrderItemCard(order: Map<String, Any>) {
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
-
+                Text(
+                    text = "Price: ${(order["price"])}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Text(
                     text = "Quantity: ${order["quantity"]}",
                     style = MaterialTheme.typography.bodyMedium

@@ -184,16 +184,18 @@ fun CartItemView(
          Column    {
              IconButton(onClick = { onIncrement() }) {
                  Icon(
-                     imageVector = Icons.Default.Add,
+                     painter = painterResource(R.drawable.plus_circle_svgrepo_com),
                      contentDescription = "Increase Quantity",
-                     tint = MaterialTheme.colorScheme.primary
+
+                     modifier = Modifier.size(30.dp)
                  )
              }
              IconButton(onClick = { onDecrement() }) {
                  Icon(
-                     painter = painterResource(R.drawable.baseline_minimize_24),
+                     painter = painterResource(R.drawable.minus_svgrepo_com),
                      contentDescription = "Decrease Quantity",
-                     tint = MaterialTheme.colorScheme.primary
+
+                     modifier = Modifier.size(30.dp)
                  )
              }
                 IconButton(
@@ -202,7 +204,8 @@ fun CartItemView(
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.error
+                        tint = Color.Black,
+                        modifier = Modifier.size(30.dp)
                     )
                 }
             }

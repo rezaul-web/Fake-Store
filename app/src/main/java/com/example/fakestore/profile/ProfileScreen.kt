@@ -122,7 +122,7 @@ fun ProfileScreen(
                 text = "Profile Screen",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(vertical = 16.dp),
-                color = MaterialTheme.colorScheme.primary
+                color = Color.Black
             )
 
             Card(
@@ -147,7 +147,7 @@ fun ProfileScreen(
                 Text(
                     "Addresses:",
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Color.Black,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 userAddress.forEach { address ->
@@ -155,7 +155,9 @@ fun ProfileScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -271,9 +273,9 @@ fun ProfileScreen(
                 onClick = { showDialog = true },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Text("Sign Out", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onPrimary)
+                Text("Sign Out", style = MaterialTheme.typography.bodyLarge, color = Color.White)
             }
         } else if (errorMessage != null) {
             Text(
@@ -293,9 +295,9 @@ fun ProfileScreen(
             onClick = { navController.navigate("address") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+            colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Red)
         ) {
-            Text("Add Address")
+            Text("Add Address", color = Color.White)
         }
     }
 

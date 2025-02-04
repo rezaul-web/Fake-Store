@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Column(
                         modifier = Modifier
-                            .fillMaxSize()
                             .padding(innerPadding) // Apply innerPadding here
                     ) {
                         MainApp(navController = navController)
