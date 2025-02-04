@@ -44,6 +44,7 @@ import com.example.fakestore.network.Resource
 @Composable
 fun AllProducts(viewModel: AllProductsViewModel = hiltViewModel(), navController: NavController) {
     val allProducts by viewModel.allProducts.collectAsState()
+    val allCategory by viewModel.allCategories.collectAsState()
 
     var searchQuery by remember { mutableStateOf(TextFieldValue()) }
 
@@ -64,7 +65,9 @@ fun AllProducts(viewModel: AllProductsViewModel = hiltViewModel(), navController
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             singleLine = true,
             leadingIcon = {
-                IconButton(onClick = {}) {
+                IconButton(onClick = {
+                    viewModel.searchedProduct(searchQuery.text.toInt())
+                }) {
                     Icon(Icons.Default.Search, contentDescription = null)
                 }
             },
@@ -80,6 +83,20 @@ fun AllProducts(viewModel: AllProductsViewModel = hiltViewModel(), navController
             },
             shape = RoundedCornerShape(20.dp)
         )
+      when(val state =allCategory) {
+          Resource.Loading -> {
+              CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+
+          }
+          is Resource.Success -> {
+              Categories(state.data) {
+                  viewModel.getProductsByCategory(it)
+              }
+          }
+          else-> {
+
+          }
+      }
 
         // Offer Image
         Box(
