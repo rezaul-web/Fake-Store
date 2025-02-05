@@ -32,7 +32,7 @@ Before you can run the app, ensure you have the following:
 - **Android SDK**: Make sure the latest SDK is installed.
 - **Firebase Project**: Set up a Firebase project for authentication and Firestore services.
 
-
+![image5](https://github.com/user-attachments/assets/4afd90da-c0a5-4703-b22e-8b4074c605a6)
 ![image4](https://github.com/user-attachments/assets/10b71e78-a3b9-4676-86a1-7b0bd81adfa4)
 ![image3](https://github.com/user-attachments/assets/0d0740c4-fcc2-4cdd-ac04-4d52bf236c83)
 ![image2](https://github.com/user-attachments/assets/593a57b1-e90d-402b-afbb-d4c5477a33f6)
