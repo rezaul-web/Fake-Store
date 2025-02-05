@@ -32,9 +32,11 @@ Before you can run the app, ensure you have the following:
 - **Android SDK**: Make sure the latest SDK is installed.
 - **Firebase Project**: Set up a Firebase project for authentication and Firestore services.
 
-### Steps to Run the App
 
-1. **Clone the Repository**
+![image4](https://github.com/user-attachments/assets/10b71e78-a3b9-4676-86a1-7b0bd81adfa4)
+![image3](https://github.com/user-attachments/assets/0d0740c4-fcc2-4cdd-ac04-4d52bf236c83)
+![image2](https://github.com/user-attachments/assets/593a57b1-e90d-402b-afbb-d4c5477a33f6)
+![image1](https://github.com/user-attachments/assets/e7e68f79-56dc-4b7a-8cb6-6c9aa3e5b084)
 
-   ```bash
-   git clone [https://github.com/your-username/fake-store-app.git](https://github.com/rezaul-web/Fake-Store.git)
+
+
