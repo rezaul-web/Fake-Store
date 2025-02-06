@@ -15,7 +15,6 @@ import com.example.fakestore.mainapp.FakeStoreBottomBar
 import com.example.fakestore.mainapp.FakeStoreTopAppBar
 import com.example.fakestore.mainapp.MainApp
 import com.example.fakestore.mainapp.Route
-import com.example.fakestore.stripe.StripeApp
 import com.example.fakestore.ui.theme.FakeStoreTheme
 import com.example.fakestore.utils.Data
 import com.google.firebase.auth.FirebaseAuth
@@ -61,7 +60,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                          MainApp(navController = navController)
 
-                      //  StripeApp()
+                     //   StripeApp()
                     }
                 }
             }

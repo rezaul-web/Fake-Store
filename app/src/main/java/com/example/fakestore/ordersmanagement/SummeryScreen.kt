@@ -1,10 +1,9 @@
 package com.example.fakestore.ordersmanagement
 
+import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,19 +15,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,15 +52,14 @@ import com.example.fakestore.model.ProductItem
 import com.example.fakestore.model.UserAddress
 import com.example.fakestore.stripe.StripeViewModel
 import com.example.fakestore.stripe.onPaymentSheetResult
+import com.example.fakestore.stripe.presentPaymentSheet
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.stripe.android.PaymentConfiguration
 import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.rememberPaymentSheet
-import java.time.LocalDate
 import java.util.Date
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 @Composable
 fun OrderSummaryScreen(
@@ -73,7 +67,8 @@ fun OrderSummaryScreen(
     ordersViewModel: OrdersViewModel = hiltViewModel(),
     navController: NavController,
     firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
-    firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    stripeViewModel: StripeViewModel = hiltViewModel()
 ) {
     val defaultAddress by ordersViewModel.defaultAddress.collectAsState()
     val selectedProducts by allProductsViewModel.selectedProduct.collectAsState()
@@ -87,9 +82,7 @@ fun OrderSummaryScreen(
         Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
         return
     }
-
-    val ordersRef = firestore.collection("orders")
-    val order = selectedProducts?.let { product->
+    val order = selectedProducts?.let { product ->
         mapOf(
             "price" to (product.price * 85).roundToInt(),
             "userId" to userId,
@@ -105,6 +98,55 @@ fun OrderSummaryScreen(
             "address" to defaultAddress
         )
     }
+    val ordersRef = firestore.collection("orders")
+
+    val paymentSheet = rememberPaymentSheet { result ->
+        onPaymentSheetResult(
+            paymentSheetResult = result,
+            onSuccess = {
+                // Place the order if payment is successful
+                if (order != null) {
+                    ordersRef.add(order)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
+                            navController.navigate(Route.AllProducts.route) {
+                                popUpTo(navController.currentDestination?.route ?: Route.HomeScreen.route) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            },
+            onFailure = {
+                Toast.makeText(context, "Payment Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    val result by stripeViewModel.stripeResponse.collectAsState()
+    var customerConfig by remember { mutableStateOf<PaymentSheet.CustomerConfiguration?>(null) }
+    var paymentIntentClientSecret by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(result) {
+        try {
+            Log.d("result", result.toString())
+            paymentIntentClientSecret = result?.paymentIntent
+            customerConfig = result?.let {
+                PaymentSheet.CustomerConfiguration(
+                    id = it.customer,
+                    ephemeralKeySecret = it.ephemeralKey
+                )
+            }
+
+            result?.let { PaymentConfiguration.init(context, it.publishableKey) }
+        } catch (e: Exception) {
+            println("Error fetching Payment Sheet details: ${e.message}")
+        }
+    }
+
 
 
     Column(
@@ -122,7 +164,6 @@ fun OrderSummaryScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         selectedProducts?.let { product ->
-
             SummeryItemCard(
                 product,
                 quantity = quantity,
@@ -141,7 +182,7 @@ fun OrderSummaryScreen(
                 OrderDetailRow("Quantity:", "$quantity")
                 OrderDetailRow(
                     "Total:",
-                    "₹${(product.price * 85 * quantity).roundToInt()+deliveryCharge+otherCharges}",
+                    "₹${(product.price * 85 * quantity).roundToInt() + deliveryCharge + otherCharges}",
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -150,28 +191,29 @@ fun OrderSummaryScreen(
             } }
 
             Spacer(modifier = Modifier.weight(1f))
-
-            PaymentCard((product.price * 85 * quantity+deliveryCharge+otherCharges).roundToInt()) {
+            val totalPrice = (product.price * 85 * quantity + deliveryCharge + otherCharges).roundToInt()
+            PaymentCard(totalPrice) {
                 if (order != null) {
-                    ordersRef.add(order)
-                        .addOnSuccessListener {
-                            Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
+                    val currentConfig = customerConfig
+                    val currentClientSecret = paymentIntentClientSecret
+                    stripeViewModel.getUser(totalPrice.toString())
 
-                            navController.navigate(Route.AllProducts.route) {
-                                popUpTo(navController.currentDestination?.route ?: Route.HomeScreen.route) { inclusive = true }
-                            }
-                        }
-                        .addOnFailureListener {
-                            Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
-                        }
+                    if (currentConfig != null && currentClientSecret != null) {
+                        presentPaymentSheet(paymentSheet, currentConfig, currentClientSecret)
+                    } else {
+                        println("Payment Sheet configuration is not ready.")
+                    }
                 }
             }
         } ?: run {
             Text("No product selected", style = MaterialTheme.typography.bodyLarge)
         }
     }
-
 }
+
+
+// Handle Payment Sheet results
+
 
 
 

@@ -16,12 +16,8 @@ class StripeViewModel @Inject constructor(private val stripeApi: StripeApi) : Vi
     private val _stripeResponse = MutableStateFlow<StripeResponse?>(null)
     val stripeResponse = _stripeResponse.asStateFlow()
 
-
-init {
-    getUser(10000.toString())
-}
     // Function to fetch Stripe data asynchronously
-    private fun getUser(amount:String) {
+     fun getUser(amount:String) {
         viewModelScope.launch {
             try {
                 // Perform the network call and update the state
