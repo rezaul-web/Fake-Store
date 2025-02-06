@@ -32,8 +32,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,8 +55,13 @@ import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.mainapp.Route
 import com.example.fakestore.model.ProductItem
 import com.example.fakestore.model.UserAddress
+import com.example.fakestore.stripe.StripeViewModel
+import com.example.fakestore.stripe.onPaymentSheetResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.rememberPaymentSheet
 import java.time.LocalDate
 import java.util.Date
 import kotlin.math.roundToInt
@@ -98,71 +107,74 @@ fun OrderSummaryScreen(
     }
 
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(top = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "Order Summary",
-                style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp),
-                fontWeight = FontWeight.Bold
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(top = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Order Summary",
+            style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp),
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        selectedProducts?.let { product ->
+
+            SummeryItemCard(
+                product,
+                quantity = quantity,
+                onIncrease = { ordersViewModel.updateQuantity(true) },
+                onDecrease = { ordersViewModel.updateQuantity(false) }
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
             Spacer(modifier = Modifier.height(16.dp))
 
-            selectedProducts?.let { product ->
-
-                SummeryItemCard(
-                    product,
-                    quantity = quantity,
-                    onIncrease = { ordersViewModel.updateQuantity(true) },
-                    onDecrease = { ordersViewModel.updateQuantity(false) }
+            Column(Modifier.padding(6.dp)) {
+                OrderDetailRow("Product Price:", "₹${(product.price * 85).roundToInt()}")
+                OrderDetailRow("Delivery Charges:", "₹$deliveryCharge")
+                OrderDetailRow("Other Charges:", "₹$otherCharges")
+                OrderDetailRow("Quantity:", "$quantity")
+                OrderDetailRow(
+                    "Total:",
+                    "₹${(product.price * 85 * quantity).roundToInt()+deliveryCharge+otherCharges}",
+                    fontWeight = FontWeight.Bold
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider()
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Column(Modifier.padding(6.dp)) {
-                    OrderDetailRow("Product Price:", "₹${(product.price * 85).roundToInt()}")
-                    OrderDetailRow("Delivery Charges:", "₹$deliveryCharge")
-                    OrderDetailRow("Other Charges:", "₹$otherCharges")
-                    OrderDetailRow("Quantity:", "$quantity")
-                    OrderDetailRow(
-                        "Total:",
-                        "₹${(product.price * 85 * quantity).roundToInt()+deliveryCharge+otherCharges}",
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                defaultAddress?.let { AddressCard(address = it) {
-                    navController.navigate(Route.ProfileScreen.route)
-                } }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                PaymentCard((product.price * 85 * quantity+deliveryCharge+otherCharges).roundToInt()) {
-                    if (order != null) {
-                        ordersRef.add(order)
-                            .addOnSuccessListener {
-                                Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
-
-                                navController.navigate(Route.AllProducts.route) {
-                                    popUpTo(navController.currentDestination?.route ?: Route.HomeScreen.route) { inclusive = true }
-                                }
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
-                            }
-                    }
-                }
-            } ?: run {
-                Text("No product selected", style = MaterialTheme.typography.bodyLarge)
             }
+            defaultAddress?.let { AddressCard(address = it) {
+                navController.navigate(Route.ProfileScreen.route)
+            } }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            PaymentCard((product.price * 85 * quantity+deliveryCharge+otherCharges).roundToInt()) {
+                if (order != null) {
+                    ordersRef.add(order)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
+
+                            navController.navigate(Route.AllProducts.route) {
+                                popUpTo(navController.currentDestination?.route ?: Route.HomeScreen.route) { inclusive = true }
+                            }
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+        } ?: run {
+            Text("No product selected", style = MaterialTheme.typography.bodyLarge)
         }
+    }
 
 }
+
+
+
 
 @Composable
 fun AddressCard(address: UserAddress,updateAddress:()->Unit) {
