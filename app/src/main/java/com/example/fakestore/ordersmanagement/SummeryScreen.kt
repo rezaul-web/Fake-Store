@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +51,7 @@ import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.mainapp.Route
 import com.example.fakestore.model.ProductItem
 import com.example.fakestore.model.UserAddress
+import com.example.fakestore.network.Resource
 import com.example.fakestore.stripe.StripeViewModel
 import com.example.fakestore.stripe.onPaymentSheetResult
 import com.example.fakestore.stripe.presentPaymentSheet
@@ -109,10 +111,9 @@ fun OrderSummaryScreen(
                     ordersRef.add(order)
                         .addOnSuccessListener {
                             Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
-                            navController.navigate(Route.AllProducts.route) {
-                                popUpTo(navController.currentDestination?.route ?: Route.HomeScreen.route) {
-                                    inclusive = true
-                                }
+                            val orderId=it.id
+                            navController.navigate("${Route.OrderConfirmation.route}/$orderId") {
+                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
                             }
                         }
                         .addOnFailureListener {
@@ -130,22 +131,39 @@ fun OrderSummaryScreen(
     var customerConfig by remember { mutableStateOf<PaymentSheet.CustomerConfiguration?>(null) }
     var paymentIntentClientSecret by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(result) {
-        try {
-            Log.d("result", result.toString())
-            paymentIntentClientSecret = result?.paymentIntent
-            customerConfig = result?.let {
-                PaymentSheet.CustomerConfiguration(
-                    id = it.customer,
-                    ephemeralKeySecret = it.ephemeralKey
-                )
+    when(val state =result) {
+        is Resource.Error -> {
+            LaunchedEffect(state.message) {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
             }
-
-            result?.let { PaymentConfiguration.init(context, it.publishableKey) }
-        } catch (e: Exception) {
-            println("Error fetching Payment Sheet details: ${e.message}")
         }
+        Resource.Idle -> {
+
+        }
+        Resource.Loading -> {
+           CircularProgressIndicator()
+        }
+        is Resource.Success -> {
+            LaunchedEffect(state.data) {
+                Log.d("result", state.data.toString())
+
+                paymentIntentClientSecret = state.data.paymentIntent
+                customerConfig = PaymentSheet.CustomerConfiguration(
+                    id = state.data.customer,
+                    ephemeralKeySecret = state.data.ephemeralKey
+                )
+
+                PaymentConfiguration.init(context, state.data.publishableKey)
+
+                // Now that API has responded, trigger payment sheet
+                if (customerConfig != null && paymentIntentClientSecret != null) {
+                    presentPaymentSheet(paymentSheet, customerConfig!!, paymentIntentClientSecret!!)
+                }
+            }
+        }
+
     }
+
 
 
 
@@ -194,9 +212,10 @@ fun OrderSummaryScreen(
             val totalPrice = (product.price * 85 * quantity + deliveryCharge + otherCharges).roundToInt()
             PaymentCard(totalPrice) {
                 if (order != null) {
+                    stripeViewModel.getUser(totalPrice.toString())
                     val currentConfig = customerConfig
                     val currentClientSecret = paymentIntentClientSecret
-                    stripeViewModel.getUser(totalPrice.toString())
+
 
                     if (currentConfig != null && currentClientSecret != null) {
                         presentPaymentSheet(paymentSheet, currentConfig, currentClientSecret)

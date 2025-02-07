@@ -22,6 +22,7 @@ import com.example.fakestore.cart.BuyFromCart
 import com.example.fakestore.cart.CartScreen
 import com.example.fakestore.home.HomeScreen
 import com.example.fakestore.offer.OfferScreen
+import com.example.fakestore.ordersmanagement.OrderConfirmationScreen
 import com.example.fakestore.ordersmanagement.OrderScreen
 import com.example.fakestore.ordersmanagement.OrderSummaryScreen
 import com.example.fakestore.ordersmanagement.PaymentScreen
@@ -94,6 +95,10 @@ fun MainApp(
         }
         composable(Route.PaymentScreen.route) {
             PaymentScreen()
+        }
+        composable("${Route.OrderConfirmation.route}/{orderId}") { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+            OrderConfirmationScreen(orderId = orderId, navController = navController)
         }
         composable(Route.BuyFromCart.route) {
             BuyFromCart(navController = navController)
