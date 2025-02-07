@@ -125,11 +125,13 @@ class CartViewModel @Inject constructor(
                 val documentId = querySnapshot.documents.first().id
 
                 cartRef.document(documentId).delete().await()
+                Log.d("deletedCart","yes")
             } catch (e: Exception) {
 
             }
+            getCartItems()
         }
-        getCartItems()
+
     }
 
 
