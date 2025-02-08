@@ -70,10 +70,15 @@ fun BuyFromCart(
     val userId = firebaseAuth.currentUser?.uid
     val context = LocalContext.current
 
+    val result by stripeViewModel.stripeResponse.collectAsState()
+    var customerConfig by remember { mutableStateOf<PaymentSheet.CustomerConfiguration?>(null) }
+    var paymentIntentClientSecret by remember { mutableStateOf<String?>(null) }
     if (userId == null) {
         Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
         return
     }
+
+    var startPayment by remember { mutableStateOf(false) } // Track payment status
 
     val ordersRef = firestore.collection("orders")
     val orders = cartItems.value.map { product ->
@@ -97,60 +102,69 @@ fun BuyFromCart(
         onPaymentSheetResult(
             paymentSheetResult = result,
             onSuccess = {
+                startPayment = false // Stop loading after success
+                customerConfig = null // Reset customer config
+                paymentIntentClientSecret = null // Reset client secret
+
+                // Process each order
                 orders.forEach { order ->
                     ordersRef.add(order)
                         .addOnSuccessListener {
-
-
+                            cartViewModel.deleteFromCart(order["productId"].toString())
                         }
                         .addOnFailureListener {
-                            Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Failed to save order, Please Try Again", Toast.LENGTH_SHORT).show()
                         }
                 }
-                orders.forEach {order->
-                    cartViewModel.deleteFromCart(order["productId"].toString())
-                    Log.d("item deleted", "yes")
-                }
+
+                // Show success message and navigate to confirmation screen
                 Toast.makeText(context, "Orders Placed", Toast.LENGTH_SHORT).show()
-                navController.navigate("${Route.OrderConfirmation.route}/fksdkjfjdfs") {
-                    popUpTo(Route.BuyFromCart.route) { inclusive = true } // Remove from backstack
+                navController.navigate("${Route.OrderConfirmation.route}/success") {
+                    popUpTo(Route.BuyFromCart.route) { inclusive = true }
                 }
             },
             onFailure = {
+                startPayment = false // Stop loading on failure
+                customerConfig = null // Reset customer config
+                paymentIntentClientSecret = null // Reset client secret
                 Toast.makeText(context, "Payment Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+            },
+            onCanceled = {
+                startPayment = false // Stop loading on cancellation
+                customerConfig = null // Reset customer config
+                paymentIntentClientSecret = null // Reset client secret
             }
         )
     }
 
-    val result by stripeViewModel.stripeResponse.collectAsState()
-    var customerConfig by remember { mutableStateOf<PaymentSheet.CustomerConfiguration?>(null) }
-    var paymentIntentClientSecret by remember { mutableStateOf<String?>(null) }
 
     when (val state = result) {
         is Resource.Error -> {
             LaunchedEffect(state.message) {
                 Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
             }
+            startPayment = false // Stop loading on error
         }
         Resource.Idle -> {}
         Resource.Loading -> {
             CircularProgressIndicator()
+            startPayment = true // Start loading when fetching payment details
         }
         is Resource.Success -> {
             LaunchedEffect(state.data) {
+                Log.d("result", state.data.toString())
                 paymentIntentClientSecret = state.data.paymentIntent
                 customerConfig = PaymentSheet.CustomerConfiguration(
                     id = state.data.customer,
                     ephemeralKeySecret = state.data.ephemeralKey
                 )
-
                 PaymentConfiguration.init(context, state.data.publishableKey)
-
                 if (customerConfig != null && paymentIntentClientSecret != null) {
                     presentPaymentSheet(paymentSheet, customerConfig!!, paymentIntentClientSecret!!)
                 }
             }
         }
+
     }
 
     Column(
@@ -202,20 +216,25 @@ fun BuyFromCart(
         Spacer(modifier = Modifier.weight(1f))
 
         val finalPrice = (totalPrice * 85) + deliveryCharge + otherCharges
-        PaymentCard(finalPrice) {
-            stripeViewModel.getUser(finalPrice.toString())
+        PaymentCard(finalPrice, startPayment) {
+            if (!startPayment) { // Only proceed if payment is not already in progress
+                startPayment = true // Start loading when clicking
+                stripeViewModel.getUser(finalPrice.toString())
 
-            val currentConfig = customerConfig
-            val currentClientSecret = paymentIntentClientSecret
+                val currentConfig = customerConfig
+                val currentClientSecret = paymentIntentClientSecret
 
-            if (currentConfig != null && currentClientSecret != null) {
-                presentPaymentSheet(paymentSheet, currentConfig, currentClientSecret)
-            } else {
-                println("Payment Sheet configuration is not ready.")
+                if (currentConfig != null && currentClientSecret != null) {
+                    presentPaymentSheet(paymentSheet, currentConfig, currentClientSecret)
+                } else {
+                    startPayment = false // Stop loading if payment is not ready
+                    println("Payment Sheet configuration is not ready.")
+                }
             }
         }
     }
 }
+
 
 
 
