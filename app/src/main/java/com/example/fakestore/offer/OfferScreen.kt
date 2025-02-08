@@ -38,7 +38,7 @@ import coil3.compose.AsyncImage
 import com.example.fakestore.allProducts.StarRatingBar
 import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.model.ProductItem
-import com.example.fakestore.network.Resource
+import com.example.fakestore.utils.Resource
 import kotlin.math.roundToInt
 
 @Composable
