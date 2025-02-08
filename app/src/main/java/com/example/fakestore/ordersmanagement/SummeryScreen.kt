@@ -1,10 +1,9 @@
 package com.example.fakestore.ordersmanagement
 
+import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,24 +15,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,12 +51,17 @@ import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.mainapp.Route
 import com.example.fakestore.model.ProductItem
 import com.example.fakestore.model.UserAddress
+import com.example.fakestore.network.Resource
+import com.example.fakestore.stripe.StripeViewModel
+import com.example.fakestore.stripe.onPaymentSheetResult
+import com.example.fakestore.stripe.presentPaymentSheet
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.time.LocalDate
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.rememberPaymentSheet
 import java.util.Date
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 @Composable
 fun OrderSummaryScreen(
@@ -64,7 +69,8 @@ fun OrderSummaryScreen(
     ordersViewModel: OrdersViewModel = hiltViewModel(),
     navController: NavController,
     firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
-    firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    stripeViewModel: StripeViewModel = hiltViewModel()
 ) {
     val defaultAddress by ordersViewModel.defaultAddress.collectAsState()
     val selectedProducts by allProductsViewModel.selectedProduct.collectAsState()
@@ -78,9 +84,7 @@ fun OrderSummaryScreen(
         Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
         return
     }
-
-    val ordersRef = firestore.collection("orders")
-    val order = selectedProducts?.let { product->
+    val order = selectedProducts?.let { product ->
         mapOf(
             "price" to (product.price * 85).roundToInt(),
             "userId" to userId,
@@ -96,73 +100,142 @@ fun OrderSummaryScreen(
             "address" to defaultAddress
         )
     }
+    val ordersRef = firestore.collection("orders")
 
+    val paymentSheet = rememberPaymentSheet { result ->
+        onPaymentSheetResult(
+            paymentSheetResult = result,
+            onSuccess = {
+                // Place the order if payment is successful
+                if (order != null) {
+                    ordersRef.add(order)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
+                            val orderId=it.id
+                            navController.navigate("${Route.OrderConfirmation.route}/$orderId") {
+                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            }
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            },
+            onFailure = {
+                Toast.makeText(context, "Payment Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(top = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "Order Summary",
-                style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp),
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+    val result by stripeViewModel.stripeResponse.collectAsState()
+    var customerConfig by remember { mutableStateOf<PaymentSheet.CustomerConfiguration?>(null) }
+    var paymentIntentClientSecret by remember { mutableStateOf<String?>(null) }
 
-            selectedProducts?.let { product ->
+    when(val state =result) {
+        is Resource.Error -> {
+            LaunchedEffect(state.message) {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+        Resource.Idle -> {
 
-                SummeryItemCard(
-                    product,
-                    quantity = quantity,
-                    onIncrease = { ordersViewModel.updateQuantity(true) },
-                    onDecrease = { ordersViewModel.updateQuantity(false) }
+        }
+        Resource.Loading -> {
+           CircularProgressIndicator()
+        }
+        is Resource.Success -> {
+            LaunchedEffect(state.data) {
+                Log.d("result", state.data.toString())
+
+                paymentIntentClientSecret = state.data.paymentIntent
+                customerConfig = PaymentSheet.CustomerConfiguration(
+                    id = state.data.customer,
+                    ephemeralKeySecret = state.data.ephemeralKey
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider()
-                Spacer(modifier = Modifier.height(16.dp))
+                PaymentConfiguration.init(context, state.data.publishableKey)
 
-                Column(Modifier.padding(6.dp)) {
-                    OrderDetailRow("Product Price:", "₹${(product.price * 85).roundToInt()}")
-                    OrderDetailRow("Delivery Charges:", "₹$deliveryCharge")
-                    OrderDetailRow("Other Charges:", "₹$otherCharges")
-                    OrderDetailRow("Quantity:", "$quantity")
-                    OrderDetailRow(
-                        "Total:",
-                        "₹${(product.price * 85 * quantity).roundToInt()+deliveryCharge+otherCharges}",
-                        fontWeight = FontWeight.Bold
-                    )
+                // Now that API has responded, trigger payment sheet
+                if (customerConfig != null && paymentIntentClientSecret != null) {
+                    presentPaymentSheet(paymentSheet, customerConfig!!, paymentIntentClientSecret!!)
                 }
-                defaultAddress?.let { AddressCard(address = it) {
-                    navController.navigate(Route.ProfileScreen.route)
-                } }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                PaymentCard((product.price * 85 * quantity+deliveryCharge+otherCharges).roundToInt()) {
-                    if (order != null) {
-                        ordersRef.add(order)
-                            .addOnSuccessListener {
-                                Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
-
-                                navController.navigate(Route.AllProducts.route) {
-                                    popUpTo(navController.currentDestination?.route ?: Route.HomeScreen.route) { inclusive = true }
-                                }
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(context, "Failed, Please Try Again", Toast.LENGTH_SHORT).show()
-                            }
-                    }
-                }
-            } ?: run {
-                Text("No product selected", style = MaterialTheme.typography.bodyLarge)
             }
         }
 
+    }
+
+
+
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(top = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Order Summary",
+            style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp),
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        selectedProducts?.let { product ->
+            SummeryItemCard(
+                product,
+                quantity = quantity,
+                onIncrease = { ordersViewModel.updateQuantity(true) },
+                onDecrease = { ordersViewModel.updateQuantity(false) }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(Modifier.padding(6.dp)) {
+                OrderDetailRow("Product Price:", "₹${(product.price * 85).roundToInt()}")
+                OrderDetailRow("Delivery Charges:", "₹$deliveryCharge")
+                OrderDetailRow("Other Charges:", "₹$otherCharges")
+                OrderDetailRow("Quantity:", "$quantity")
+                OrderDetailRow(
+                    "Total:",
+                    "₹${(product.price * 85 * quantity).roundToInt() + deliveryCharge + otherCharges}",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            defaultAddress?.let { AddressCard(address = it) {
+                navController.navigate(Route.ProfileScreen.route)
+            } }
+
+            Spacer(modifier = Modifier.weight(1f))
+            val totalPrice = (product.price * 85 * quantity + deliveryCharge + otherCharges).roundToInt()
+            PaymentCard(totalPrice) {
+                if (order != null) {
+                    stripeViewModel.getUser(totalPrice.toString())
+                    val currentConfig = customerConfig
+                    val currentClientSecret = paymentIntentClientSecret
+
+
+                    if (currentConfig != null && currentClientSecret != null) {
+                        presentPaymentSheet(paymentSheet, currentConfig, currentClientSecret)
+                    } else {
+                        println("Payment Sheet configuration is not ready.")
+                    }
+                }
+            }
+        } ?: run {
+            Text("No product selected", style = MaterialTheme.typography.bodyLarge)
+        }
+    }
 }
+
+
+// Handle Payment Sheet results
+
+
+
+
 
 @Composable
 fun AddressCard(address: UserAddress,updateAddress:()->Unit) {
