@@ -24,7 +24,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,7 +49,6 @@ import com.example.fakestore.R
 import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.mainapp.Route
 import com.example.fakestore.model.ProductItem
-import com.example.fakestore.model.UserAddress
 import com.example.fakestore.network.Resource
 import com.example.fakestore.stripe.StripeViewModel
 import com.example.fakestore.stripe.onPaymentSheetResult
@@ -78,12 +76,17 @@ fun OrderSummaryScreen(
     val otherCharges by ordersViewModel.otherCharges.collectAsState()
     val quantity by ordersViewModel.quantity.collectAsState()
     val context = LocalContext.current
-
+    val result by stripeViewModel.stripeResponse.collectAsState()
+    var customerConfig by remember { mutableStateOf<PaymentSheet.CustomerConfiguration?>(null) }
+    var paymentIntentClientSecret by remember { mutableStateOf<String?>(null) }
     val userId = firebaseAuth.currentUser?.uid
     if (userId == null) {
         Toast.makeText(context, "Please log in first", Toast.LENGTH_SHORT).show()
         return
     }
+
+    var startPayment by remember { mutableStateOf(false) } // Moved to OrderSummaryScreen
+
     val order = selectedProducts?.let { product ->
         mapOf(
             "price" to (product.price * 85).roundToInt(),
@@ -100,18 +103,21 @@ fun OrderSummaryScreen(
             "address" to defaultAddress
         )
     }
+
     val ordersRef = firestore.collection("orders")
 
     val paymentSheet = rememberPaymentSheet { result ->
         onPaymentSheetResult(
             paymentSheetResult = result,
             onSuccess = {
-                // Place the order if payment is successful
+                startPayment = false
+                customerConfig = null // Reset customer config
+                paymentIntentClientSecret = null // Reset client secret
                 if (order != null) {
                     ordersRef.add(order)
                         .addOnSuccessListener {
                             Toast.makeText(context, "Order Placed", Toast.LENGTH_SHORT).show()
-                            val orderId=it.id
+                            val orderId = it.id
                             navController.navigate("${Route.OrderConfirmation.route}/$orderId") {
                                 popUpTo(navController.graph.startDestinationId) { inclusive = true }
                             }
@@ -122,50 +128,48 @@ fun OrderSummaryScreen(
                 }
             },
             onFailure = {
+                startPayment = false
+                customerConfig = null // Reset customer config
+                paymentIntentClientSecret = null // Reset client secret
                 Toast.makeText(context, "Payment Failed, Please Try Again", Toast.LENGTH_SHORT).show()
+            },
+            onCanceled = {
+                startPayment = false
+                customerConfig = null // Reset customer config
+                paymentIntentClientSecret = null // Reset client secret
             }
         )
     }
 
-    val result by stripeViewModel.stripeResponse.collectAsState()
-    var customerConfig by remember { mutableStateOf<PaymentSheet.CustomerConfiguration?>(null) }
-    var paymentIntentClientSecret by remember { mutableStateOf<String?>(null) }
 
-    when(val state =result) {
+
+    when (val state = result) {
         is Resource.Error -> {
             LaunchedEffect(state.message) {
                 Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
             }
-        }
-        Resource.Idle -> {
-
+            startPayment = false // Stop loading if error
         }
         Resource.Loading -> {
-           CircularProgressIndicator()
+            CircularProgressIndicator()
+            startPayment = true // Start loading when fetching payment details
         }
         is Resource.Success -> {
             LaunchedEffect(state.data) {
                 Log.d("result", state.data.toString())
-
                 paymentIntentClientSecret = state.data.paymentIntent
                 customerConfig = PaymentSheet.CustomerConfiguration(
                     id = state.data.customer,
                     ephemeralKeySecret = state.data.ephemeralKey
                 )
-
                 PaymentConfiguration.init(context, state.data.publishableKey)
-
-                // Now that API has responded, trigger payment sheet
                 if (customerConfig != null && paymentIntentClientSecret != null) {
                     presentPaymentSheet(paymentSheet, customerConfig!!, paymentIntentClientSecret!!)
                 }
             }
         }
-
+        Resource.Idle -> {}
     }
-
-
-
 
     Column(
         modifier = Modifier
@@ -204,22 +208,28 @@ fun OrderSummaryScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
-            defaultAddress?.let { AddressCard(address = it) {
-                navController.navigate(Route.ProfileScreen.route)
-            } }
+
+            defaultAddress?.let {
+                AddressCard(address = it) {
+                    navController.navigate(Route.ProfileScreen.route)
+                }
+            }
 
             Spacer(modifier = Modifier.weight(1f))
             val totalPrice = (product.price * 85 * quantity + deliveryCharge + otherCharges).roundToInt()
-            PaymentCard(totalPrice) {
-                if (order != null) {
+
+            PaymentCard(totalPrice, startPayment) {
+                if (!startPayment) { // Only proceed if payment is not already in progress
+                    startPayment = true // Start loading when clicking
                     stripeViewModel.getUser(totalPrice.toString())
+
                     val currentConfig = customerConfig
                     val currentClientSecret = paymentIntentClientSecret
-
 
                     if (currentConfig != null && currentClientSecret != null) {
                         presentPaymentSheet(paymentSheet, currentConfig, currentClientSecret)
                     } else {
+                        startPayment = false // Stop loading if payment is not ready
                         println("Payment Sheet configuration is not ready.")
                     }
                 }
@@ -231,61 +241,12 @@ fun OrderSummaryScreen(
 }
 
 
+
 // Handle Payment Sheet results
 
 
-
-
-
 @Composable
-fun AddressCard(address: UserAddress,updateAddress:()->Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column(
-            modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text("Delivering to:", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
-            Text("Address Line: ${address.addressLine}", style = MaterialTheme.typography.bodyMedium)
-            Text("City: ${address.city}", style = MaterialTheme.typography.bodyMedium)
-            Text("State: ${address.state}", style = MaterialTheme.typography.bodyMedium)
-            Text("Postal Code: ${address.postalCode}", style = MaterialTheme.typography.bodyMedium)
-            Text("Country: ${address.country}", style = MaterialTheme.typography.bodyMedium)
-
-            OutlinedButton(onClick = {
-                updateAddress()
-            }) {
-                Text(text="Update Address")
-            }
-        }
-    }
-}
-@Composable
-fun OrderDetailRow(label: String, value: String, fontWeight: FontWeight = FontWeight.Normal) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
-        )
-        Text(
-            value,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = 18.sp,
-                fontWeight = fontWeight
-            )
-        )
-    }
-}
-
-@Composable
-fun PaymentCard(totalPrice: Int,putOrder:() ->Unit) {
+fun PaymentCard(totalPrice: Int, startPayment: Boolean, putOrder: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -323,109 +284,108 @@ fun PaymentCard(totalPrice: Int,putOrder:() ->Unit) {
             }
 
             Button(
-                onClick = { /* Handle payment logic */
-                    putOrder()
-                },
+                onClick = putOrder,
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .padding(4.dp)
                     .weight(1f),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Text(
-                    "Proceed to Payment",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun SummeryItemCard(
-    product: ProductItem,
-    quantity: Int,
-    onIncrease: () -> Unit,
-    onDecrease: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        shape = RoundedCornerShape(8.dp),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Product Image
-            AsyncImage(
-                model = product.image,
-                contentDescription = product.title,
-                modifier = Modifier
-                    .size(80.dp)
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(8.dp)) // Rounded corners for the image
-            )
-
-            // Product Details Column
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = product.title,
-                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 16.sp)
-                )
-                Text(
-                    text = "Price: ₹${((product.price * 85).roundToInt())}",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)
-                )
-
-                // Quantity Row with + and - buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Decrease Quantity Button
-
-
-                    // Quantity Text
-                    Text(
-                        text = "Quantity: $quantity",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp)
-                    )
-
-                    // Increase Quantity Button
-                    IconButton(
-                        onClick = { onIncrease() }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.plus_circle_svgrepo_com),
-                            contentDescription = "Increase Quantity",
-                            Modifier.size(30.dp)
-                        )
-                    }
-                    IconButton(
-                        onClick = { onDecrease() },
-                        enabled = quantity > 1 // Disable the button if quantity is 1
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.minus_svgrepo_com),
-                            contentDescription = "Decrease Quantity",
-                            tint = Color.Black,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
+                if (!startPayment) {
+                    Text("Proceed to Payment", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                } else {
+                    CircularProgressIndicator(modifier = Modifier.size(40.dp), color = Color.White)
                 }
             }
         }
     }
 }
+
+
+    @Composable
+    fun SummeryItemCard(
+        product: ProductItem,
+        quantity: Int,
+        onIncrease: () -> Unit,
+        onDecrease: () -> Unit
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            shape = RoundedCornerShape(8.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Product Image
+                AsyncImage(
+                    model = product.image,
+                    contentDescription = product.title,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(8.dp)) // Rounded corners for the image
+                )
+
+                // Product Details Column
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = product.title,
+                        style = MaterialTheme.typography.titleSmall.copy(fontSize = 16.sp)
+                    )
+                    Text(
+                        text = "Price: ₹${((product.price * 85).roundToInt())}",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)
+                    )
+
+                    // Quantity Row with + and - buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Decrease Quantity Button
+
+
+                        // Quantity Text
+                        Text(
+                            text = "Quantity: $quantity",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp)
+                        )
+
+                        // Increase Quantity Button
+                        IconButton(
+                            onClick = { onIncrease() }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.plus_circle_svgrepo_com),
+                                contentDescription = "Increase Quantity",
+                                Modifier.size(30.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = { onDecrease() },
+                            enabled = quantity > 1 // Disable the button if quantity is 1
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.minus_svgrepo_com),
+                                contentDescription = "Decrease Quantity",
+                                tint = Color.Black,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+

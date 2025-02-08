@@ -2,10 +2,10 @@ package com.example.fakestore.stripe
 
 import com.stripe.android.paymentsheet.PaymentSheetResult
 
- fun onPaymentSheetResult(paymentSheetResult: PaymentSheetResult,onSuccess:()->Unit,onFailure:()->Unit) {
+ fun onPaymentSheetResult(paymentSheetResult: PaymentSheetResult,onSuccess:()->Unit,onFailure:()->Unit,onCanceled:()->Unit={}) {
     when (paymentSheetResult) {
         is PaymentSheetResult.Canceled -> {
-            println("Payment Sheet canceled")
+            onCanceled()
         }
 
         is PaymentSheetResult.Failed -> {
