@@ -3,6 +3,7 @@ package com.example.fakestore.network
 import com.example.fakestore.model.AllProducts
 import com.example.fakestore.model.Category
 import com.example.fakestore.model.ProductItem
+import com.example.fakestore.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -97,9 +98,9 @@ class NetworkRepository @Inject constructor(private val fakeStoreApi: FakeStoreA
 }
 
 
-sealed class Resource<out T> {
-    data class Success<out T>(val data: T) : Resource<T>()
-    data class Error(val message: String, val cause: Throwable? = null) : Resource<Nothing>()
-    data object Loading : Resource<Nothing>()
-   data object Idle:Resource<Nothing>()
-}
+//sealed class Resource<out T> {
+//    data class Success<out T>(val data: T) : Resource<T>()
+//    data class Error(val message: String, val cause: Throwable? = null) : Resource<Nothing>()
+//    data object Loading : Resource<Nothing>()
+//   data object Idle:Resource<Nothing>()
+//}

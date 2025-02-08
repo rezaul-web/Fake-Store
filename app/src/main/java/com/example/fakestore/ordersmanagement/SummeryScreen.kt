@@ -49,10 +49,10 @@ import com.example.fakestore.R
 import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.mainapp.Route
 import com.example.fakestore.model.ProductItem
-import com.example.fakestore.network.Resource
 import com.example.fakestore.stripe.StripeViewModel
 import com.example.fakestore.stripe.onPaymentSheetResult
 import com.example.fakestore.stripe.presentPaymentSheet
+import com.example.fakestore.utils.Resource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.stripe.android.PaymentConfiguration

@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.fakestore.R
-import com.example.fakestore.network.Resource
+import com.example.fakestore.utils.Resource
 
 
 @Composable

@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.fakestore.mainapp.Route
-import com.example.fakestore.network.Resource
 import com.example.fakestore.ordersmanagement.AddressCard
 import com.example.fakestore.ordersmanagement.OrderDetailRow
 import com.example.fakestore.ordersmanagement.OrdersViewModel
@@ -44,6 +43,7 @@ import com.example.fakestore.ordersmanagement.PaymentCard
 import com.example.fakestore.stripe.StripeViewModel
 import com.example.fakestore.stripe.onPaymentSheetResult
 import com.example.fakestore.stripe.presentPaymentSheet
+import com.example.fakestore.utils.Resource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.stripe.android.PaymentConfiguration

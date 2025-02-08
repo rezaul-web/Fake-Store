@@ -3,7 +3,7 @@ package com.example.fakestore.stripe
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fakestore.model.PaymentRequest
-import com.example.fakestore.network.Resource
+import com.example.fakestore.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
