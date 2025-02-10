@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.stripe.stripe.android)
 
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
+    implementation (libs.play.services.location)
 
 
 }
