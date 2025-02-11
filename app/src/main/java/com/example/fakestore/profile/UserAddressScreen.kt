@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+
 import com.example.fakestore.model.UserAddress
 import com.example.fakestore.utils.FakeStoreTextField
 import com.google.firebase.auth.FirebaseAuth
@@ -40,6 +41,7 @@ fun UserAddressScreen(navController: NavController,
                       ) {
     val context= LocalContext.current
     var isSelected by remember { mutableStateOf(false) }
+    var isSelectedCurrentLocation by remember { mutableStateOf(false) }
     val addressLine = remember {
         mutableStateOf( "")
     }
@@ -95,10 +97,14 @@ fun UserAddressScreen(navController: NavController,
             modifier = Modifier.fillMaxWidth()
         )
         Row(modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
             ) {
             Text(text = "Set as Default")
             RadioButton(onClick = {isSelected=!isSelected}, selected = isSelected)
+            Text(text = "Use Current Location ")
+            RadioButton(onClick = {isSelectedCurrentLocation=!isSelectedCurrentLocation}, selected = isSelectedCurrentLocation)
+
         }
 
 
@@ -122,6 +128,17 @@ fun UserAddressScreen(navController: NavController,
             enabled = addressLine.value.isNotEmpty() && city.value.isNotEmpty() && state.value.isNotEmpty() && postalCode.value.isNotEmpty() && country.value.isNotEmpty()
         ) {
             Text(text = "Save")
+        }
+
+        if(isSelectedCurrentLocation) {
+            LocationScreen { address ->
+                addressLine.value = address[0].getAddressLine(0)
+                city.value = address[0].locality
+                state.value = address[0].adminArea
+                postalCode.value = address[0].postalCode
+                country.value = address[0].countryName
+
+            }
         }
     }
 }
