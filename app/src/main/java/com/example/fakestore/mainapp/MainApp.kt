@@ -16,6 +16,7 @@ import com.example.fakestore.allProducts.AllProducts
 import com.example.fakestore.allProducts.AllProductsViewModel
 import com.example.fakestore.allProducts.DetailScreen
 import com.example.fakestore.auth.AuthScreen
+import com.example.fakestore.auth.ForgotPasswordScreen
 import com.example.fakestore.auth.login.LogInScreen
 import com.example.fakestore.auth.signup.SignUpScreen
 import com.example.fakestore.cart.BuyFromCart
@@ -102,6 +103,9 @@ fun MainApp(
         }
         composable(Route.BuyFromCart.route) {
             BuyFromCart(navController = navController)
+        }
+        composable(Route.ForgotPassword.route) {
+            ForgotPasswordScreen(navController = navController)
         }
         composable(
             "updateAddress/{addressLine}/{city}/{state}/{postalCode}/{country}/{isDefault}",

@@ -16,6 +16,7 @@ sealed class Route(val route: String) {
   data  object PaymentScreen : Route("payment_screen")
    data object BuyFromCart : Route("buy_from_cart")
     data object OrderConfirmation:Route("order_confirmed")
+    data object ForgotPassword:Route("forgot_password")
 
     data class UpdateAddress(
         val addressLine: String,

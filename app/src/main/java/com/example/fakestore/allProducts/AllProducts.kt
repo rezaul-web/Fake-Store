@@ -66,7 +66,7 @@ fun AllProducts(viewModel: AllProductsViewModel = hiltViewModel(), navController
             singleLine = true,
             leadingIcon = {
                 IconButton(onClick = {
-                    viewModel.searchedProduct(searchQuery.text.toInt())
+
                 }) {
                     Icon(Icons.Default.Search, contentDescription = null)
                 }

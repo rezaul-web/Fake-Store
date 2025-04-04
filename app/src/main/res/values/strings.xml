@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Fake Store</string>
+    <string name="app_name">Stylish</string>
     <string name="welcome">Welcome to</string>
-    <string name="fake_store">Fake Store</string>
+    <string name="fake_store">Stylish</string>
     <string name="skip">Skip</string>
     <string name="favorite_store">All Your favorites are delivered\nfast at your door\n</string>
     <string name="sign_in_with">Sign in with</string>

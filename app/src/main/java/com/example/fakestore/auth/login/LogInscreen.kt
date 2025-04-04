@@ -42,6 +42,7 @@ import com.example.fakestore.utils.LoginOption
 import com.example.fakestore.R
 import com.example.fakestore.utils.SocialButtons
 import com.example.fakestore.auth.AuthResult
+import com.example.fakestore.mainapp.Route
 import com.example.fakestore.ui.theme.Orange
 
 
@@ -150,7 +151,9 @@ fun LogInScreen(
             Spacer(Modifier.size(16.dp))
 
             // Forgot Password Button
-            TextButton(onClick = { /* Navigate to Forgot Password Screen */ }) {
+            TextButton(onClick = {
+                navController.navigate(Route.ForgotPassword.route)
+            }) {
                 Text(text = "Forgot password?", color = Orange)
             }
 

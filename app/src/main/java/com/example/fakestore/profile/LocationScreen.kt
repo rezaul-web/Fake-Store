@@ -9,8 +9,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import java.util.Locale
@@ -43,10 +45,14 @@ var key by remember { mutableStateOf(false) }
         if (isGranted) {
             fetchLocation(context) { loc ->
 
-                val geocoder = Geocoder(context, Locale.getDefault())
-                val address = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
-                if (address != null) {
-                    location(address)
+               try {
+                    val geocoder = Geocoder(context, Locale.getDefault())
+                    val address = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
+                    if (address != null) {
+                        location(address)
+                    }
+                }catch (e: Exception) {
+                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
