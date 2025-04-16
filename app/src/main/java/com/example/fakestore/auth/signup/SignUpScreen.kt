@@ -39,6 +39,7 @@ import com.example.fakestore.utils.LoginOption
 import com.example.fakestore.R
 import com.example.fakestore.utils.SocialButtons
 import com.example.fakestore.auth.AuthResult
+import com.example.fakestore.mainapp.Route
 import com.example.fakestore.ui.theme.Orange
 
 
@@ -145,7 +146,11 @@ fun SignUpScreen(
             }
             LoginOption(
                 onClick = {
-                    navController.navigate("log_in")
+                    navController.navigate("log_in"){
+                        popUpTo(Route.LogIn.route){
+                            inclusive=true
+                        }
+                    }
                 },
                 name = R.string.log_in,
                 text = R.string.already_have_account,

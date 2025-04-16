@@ -37,7 +37,7 @@ var key by remember { mutableStateOf(false) }
 
     // Check and request permission
     LaunchedEffect(key) {
-        val permission = Manifest.permission.ACCESS_FINE_LOCATION // ✅ Corrected
+        val permission = Manifest.permission.ACCESS_FINE_LOCATION
         val isGranted = ContextCompat.checkSelfPermission(
             context,
             permission

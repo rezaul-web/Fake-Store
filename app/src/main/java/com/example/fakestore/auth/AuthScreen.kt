@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.fakestore.utils.LoginOption
 import com.example.fakestore.R
+import com.example.fakestore.mainapp.Route
 import com.example.fakestore.utils.SocialButtons
 import com.example.fakestore.ui.theme.Orange
 
@@ -37,19 +38,14 @@ fun AuthScreen(modifier: Modifier = Modifier, navController: NavHostController) 
     val imageSize = remember {
         mutableStateOf(IntSize.Zero)
     }
-    val brush = Brush.verticalGradient(
-        colors = listOf(
-            Color.Transparent, Color.Black
-        ),
-        startY = imageSize.value.height.toFloat() / 3
-    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
         Image(
-            painter = painterResource(R.drawable.background),
+            painter = painterResource(R.drawable.ic_auth_bg),
             contentDescription = null,
             modifier = Modifier
                 .matchParentSize()
@@ -57,7 +53,7 @@ fun AuthScreen(modifier: Modifier = Modifier, navController: NavHostController) 
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(brush)
+
         )
         Button(
             onClick = {},
@@ -125,7 +121,11 @@ fun AuthScreen(modifier: Modifier = Modifier, navController: NavHostController) 
                 )
             }
             LoginOption(text = R.string.already_have_account, name = R.string.sign_in, onClick = {
-                navController.navigate("log_in")
+                navController.navigate("log_in"){
+                    popUpTo(Route.SignUp.route){
+                        inclusive=true
+                    }
+                }
             })
 
         }

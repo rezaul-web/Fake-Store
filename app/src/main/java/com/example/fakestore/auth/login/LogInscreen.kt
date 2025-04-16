@@ -152,7 +152,11 @@ fun LogInScreen(
 
             // Forgot Password Button
             TextButton(onClick = {
-                navController.navigate(Route.ForgotPassword.route)
+                navController.navigate(Route.ForgotPassword.route){
+                    popUpTo(Route.LogIn.route){
+                        inclusive=true
+                    }
+                }
             }) {
                 Text(text = "Forgot password?", color = Orange)
             }
